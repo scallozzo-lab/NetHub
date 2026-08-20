@@ -443,7 +443,7 @@ Reinit:
     
 #ifdef _USE_DUMMY_TEST_DEVICE
     {
-        uint8_t dummyid[6] = {0,0,0,0,0,0};
+        uint8_t dummyid[6] = {1,2,3,4,5,6};
         int r = _NVCreateConfig(dummyid);
         if(r == 0)
             goto Reinit;

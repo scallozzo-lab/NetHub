@@ -86,8 +86,9 @@ void _InitLTProtocol(void)
 
 uint8_t *_GetHubID(void)
 {
-    static const uint8_t hubid[] = {0,0,0,0,0,0};
-    return (uint8_t*)hubid;
+    //static const uint8_t hubid[] = {0,0,0,0,0,0};
+    //return (uint8_t*)hubid;
+    return (uint8_t*)LTProtocol.HubId;
 }
 
 void _ProcRxLT(uint8_t *xbuff, uint16_t *len)

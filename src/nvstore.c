@@ -113,7 +113,7 @@ int _NVCreateConfig(uint8_t *id)
 {
     if(id)
     {
-        if(_GetMainStatus() & MAIN_STS_UNCONFIG_DEV)
+        if((_GetMainStatus() & MAIN_STS_UNCONFIG_DEV))
         {
             stConfigid Configid = {0};
 
