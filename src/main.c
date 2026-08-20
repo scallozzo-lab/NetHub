@@ -288,7 +288,7 @@ uint32_t _GetTimeRunning(void)
 
 uint16_t _GetFirmwareVer(void)
 {
-    return 0;
+    return FW_VERSION_0<<8 | FW_VERSION_1;
 }
 
 uint16_t GetFlashSizeKB(void)
