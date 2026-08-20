@@ -152,6 +152,8 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                             else printf("[_ProcRxLT] Fwupdate (DESHABILITADO DESDE SRV) Ver:%02X.%02X\n", RxLTHubStatus->HubVer[0], RxLTHubStatus->HubVer[1]);
 #endif
                         }
+                        // Nueva secuencia
+                        LTProtocol.seqId++;
                     }
                     // Si cambió la cantidad de dispositivos habilitados, procesa la nueva lista:
                     if(LTProtocol.LTDevAttached != RxLTHubStatus->DevAttached || LTProtocol.LTDevDisabled != RxLTHubStatus->DevDisabled)
