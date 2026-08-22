@@ -37,8 +37,8 @@
 #define _CANTMAX_TXSRV_RETRY    20
 #define _CANTMAX_CONN_RETRY     30
 
-#define _COMINTDISABLE          0
-#define _COMINTCLEARFIFO        2
+//#define _COMINTDISABLE          0
+//#define _COMINTCLEARFIFO        2
 
 
 #define _AT_READY_1     "*ATREADY:1"                                    // UCC de inicio

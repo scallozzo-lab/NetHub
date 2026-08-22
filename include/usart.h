@@ -5,6 +5,11 @@
 
 #define UART_RX_BUF_SIZE 2048
 
+#define _USART1_DMA_MODE
+
+#define _COMINTDISABLE          0
+#define _COMINTCLEARFIFO        2
+
 
 void USART1_Init(uint32_t _sysclkfreq, uint8_t _irq);
 void USART2_Init(uint32_t _sysclkfreq, uint8_t _irq);

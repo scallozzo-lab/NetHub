@@ -17,7 +17,7 @@
 //#define _USE_DUMMY_TEST_DMX512
 /*--------------------------------------------------------------*/
 
-//#define _USE_DEBUG_SRVCOM
+#define _USE_DEBUG_SRVCOM
 #define _USE_DEBUG_TXRX
 
 //#define _USE_DEBUG_TX_SRVCOM            

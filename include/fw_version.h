@@ -5,7 +5,7 @@
 
 
 #define FW_VERSION_0            1
-#define FW_VERSION_1            5
+#define FW_VERSION_1            6
 #define FW_VERSION_REV          'd'
 #ifndef FW_TYPE
 	#define FW_TYPE            '?'

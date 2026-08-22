@@ -13,6 +13,9 @@
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
  
+ [22/08/2026] SCALLOZZO
+    # Se agrega RX USART1 por DMA, para el SIM7670, se habilitada con _USART1_DMA_MODE
+ 
  [18/08/2026] SCALLOZZO
     # Se agrega bit SSTATUS_STS_FWUPDATE_ENABLE para habilitar actualización remota de Firmware.
  

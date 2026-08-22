@@ -7,6 +7,11 @@ static volatile uint8_t rx_buf[UART_RX_BUF_SIZE];
 static volatile uint16_t rx_idx = 0;
 static volatile uint8_t overrun_u1  = 0;
 
+#ifdef _USART1_DMA_MODE
+    static volatile uint16_t rx_dma_pos = 0;
+static uint32_t USART_BRR_FromPCLK(uint32_t pclk, uint32_t baud);
+#endif
+
 /*
 void USART1_IRQHandler(void)
 {
@@ -56,6 +61,128 @@ void USART1_EnableRXInterrupt(void)
     USART1->CR1 |= USART_CR1_RXNEIE;    // Enable RX interrupt
 }
 
+#ifdef _USART1_DMA_MODE
+
+/*
+ * ---------------------------------------------------------
+ * USART1 INIT
+ * STM32F103
+ *
+ * USART1_RX -> DMA1 Channel 5
+ * ---------------------------------------------------------
+ */
+void USART1_Init(uint32_t _sysclkfreq, uint8_t _irq)
+{
+    /*
+     * -----------------------------------------------------
+     * Clocks
+     * -----------------------------------------------------
+     */
+
+    RCC->APB2ENR |=
+        RCC_APB2ENR_IOPAEN |
+        RCC_APB2ENR_USART1EN;
+
+    RCC->AHBENR |= RCC_AHBENR_DMA1EN;
+
+
+    /*
+     * -----------------------------------------------------
+     * PA9 = USART1_TX
+     * Alternate Function Push-Pull
+     * -----------------------------------------------------
+     */
+
+     // Configure PA9 as alternate function push-pull (TX)
+    GPIOA->CRH &= ~(GPIO_CRH_MODE9 | GPIO_CRH_CNF9);
+    GPIOA->CRH |= (GPIO_CRH_MODE9_1 | GPIO_CRH_MODE9_0); // Output 50 MHz
+    GPIOA->CRH |= GPIO_CRH_CNF9_1;                        // AF Push-Pull
+
+
+    /*
+     * -----------------------------------------------------
+     * PA10 = USART1_RX
+     * Floating input
+     * -----------------------------------------------------
+     */
+
+    //GPIOA->CRH &= ~(GPIO_CRH_MODE10 |
+    //                GPIO_CRH_CNF10);
+
+    //GPIOA->CRH |= GPIO_CRH_CNF10_0;
+
+  // Configure PA10 as input floating (RX)
+    GPIOA->CRH &= ~(GPIO_CRH_MODE10 | GPIO_CRH_CNF10);
+    GPIOA->CRH |= GPIO_CRH_CNF10_0;
+
+
+    /*
+     * -----------------------------------------------------
+     * Baudrate
+     * -----------------------------------------------------
+     */
+
+    //USART1->BRR =
+    //    USART_BRR_FromPCLK(_sysclkfreq, 115200U);
+    USART1->BRR = _sysclkfreq / 115200;
+
+
+    /*
+     * -----------------------------------------------------
+     * USART
+     * -----------------------------------------------------
+     */
+
+    USART1->CR1 = 0;
+    USART1->CR2 = 0;
+    USART1->CR3 = 0;
+
+
+    USART1->CR1 =
+        USART_CR1_TE |
+        USART_CR1_RE |
+        USART_CR1_UE;
+
+
+    /*
+     * -----------------------------------------------------
+     * DMA1 Channel 5 = USART1 RX
+     * -----------------------------------------------------
+     */
+
+    DMA1_Channel5->CCR = 0;
+
+    DMA1_Channel5->CPAR =
+        (uint32_t)&USART1->DR;
+
+    DMA1_Channel5->CMAR =
+        (uint32_t)rx_buf;
+
+    DMA1_Channel5->CNDTR =
+        UART_RX_BUF_SIZE;
+
+    DMA1_Channel5->CCR =
+        DMA_CCR_MINC |
+        DMA_CCR_CIRC;
+
+
+    /*
+     * USART RX -> DMA
+     */
+
+    USART1->CR3 |= USART_CR3_DMAR;
+
+
+    /*
+     * Enable DMA
+     */
+
+    DMA1_Channel5->CCR |= DMA_CCR_EN;
+
+
+    (void)_irq;
+}
+#else
 // Minimal USART1 init
 void USART1_Init(uint32_t _sysclkfreq, uint8_t _irq)
 {
@@ -86,6 +213,7 @@ void USART1_Init(uint32_t _sysclkfreq, uint8_t _irq)
         NVIC_EnableIRQ(USART1_IRQn);
     }
 }
+#endif
 
 // Send a single character
 void USART1_SendChar(char c)
@@ -191,17 +319,147 @@ int USART2_ReceiveChar(char *c)
     return 0;               // No data
 }
 
+void USART1_ResetRxDMA(void)
+{
+    DMA1_Channel5->CCR &= ~DMA_CCR_EN;       // Deshabilitar DMA
+
+    DMA1_Channel5->CNDTR = UART_RX_BUF_SIZE; // Recargar cantidad de bytes
+
+    DMA1_Channel5->CPAR  = (uint32_t)&USART1->DR;
+    //DMA1_Channel5->CMAR  = (uint32_t)UART_RX_BUF_SIZE;
+
+     DMA1_Channel5->CMAR =
+        (uint32_t)rx_buf;
+
+
+    DMA1_Channel5->CCR |= DMA_CCR_EN;        // Habilitar nuevamente
+}
+
 void USART1_FlushRx(void)
 {
     rx_idx = 0;
     memset((uint8_t *)rx_buf, 0, sizeof(rx_buf));
+#ifdef _USART1_DMA_MODE
+    USART1_ResetRxDMA();
+#endif
 }
 
 uint16_t USART1_ReadRx(void)
 {
+#ifdef _USART1_DMA_MODE
+    
+uint16_t dma_pos;
+    /*
+     * Posición actual de escritura del DMA
+     */
+    dma_pos =
+        UART_RX_BUF_SIZE -
+        DMA1_Channel5->CNDTR;
+
+    //printf("Rx USART1_ReadRx len = %d\n",dma_pos);
+    return dma_pos;
+    #else    
     return rx_idx;
+#endif
 }
 
+#ifdef _USART1_DMA_MODE
+uint8_t *USART1_rx(uint16_t *rxlen, uint8_t irqf)
+{
+    uint16_t dma_pos;
+
+    /*
+     * Posición actual de escritura del DMA
+     */
+    dma_pos =
+        UART_RX_BUF_SIZE -
+        DMA1_Channel5->CNDTR;
+
+
+//printf("CNDTR = %u\n", dma_pos);
+
+    /*
+     * DMA circular
+     */
+    if (dma_pos >= UART_RX_BUF_SIZE)
+        dma_pos = 0;
+
+
+    /*
+     * No hay datos nuevos
+     */
+    if (dma_pos == rx_dma_pos)
+        return NULL;
+
+
+    /*
+     * Cantidad de bytes disponibles
+     */
+    uint16_t len;
+
+
+    if (dma_pos > rx_dma_pos)
+    {
+        /*
+         * Caso normal
+         *
+         * rx_dma_pos -----> dma_pos
+         */
+
+        len = dma_pos - rx_dma_pos;
+    }
+    else
+    {
+        /*
+         * DMA dio la vuelta
+         */
+
+        len =
+            (UART_RX_BUF_SIZE - rx_dma_pos)
+            + dma_pos;
+    }
+
+
+    if (rxlen)
+        *rxlen = len;
+
+
+    /*
+     * -----------------------------------------------------
+     * IMPORTANTE
+     *
+     * La memoria es circular.
+     *
+     * Si el bloque recibido cruza el final del buffer,
+     * no podemos devolver un único puntero contiguo.
+     * -----------------------------------------------------
+     */
+
+    if (rx_dma_pos + len <= UART_RX_BUF_SIZE)
+    {
+        uint8_t *ptr =
+            &rx_buf[rx_dma_pos];
+
+
+        if (irqf & _COMINTCLEARFIFO)
+        {    
+            rx_dma_pos = 0;
+            USART1_ResetRxDMA();    
+        }
+
+        return ptr;
+    }
+
+
+    /*
+     * El bloque cruza el final del buffer.
+     *
+     * Por ahora no lo devolvemos como bloque único.
+     */
+
+    return NULL;
+}
+#else
 uint8_t *USART1_rx(uint16_t *rxlen, uint8_t irqf)
 {
     if(rx_idx)
@@ -216,6 +474,7 @@ uint8_t *USART1_rx(uint16_t *rxlen, uint8_t irqf)
     }
     else return 0;
 }
+#endif
 
 int USART1_tx(uint8_t *buf, uint16_t len)
 {
