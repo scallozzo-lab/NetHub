@@ -4,7 +4,7 @@
 #include "main.h"
 
 #ifdef _USE_DMX512
-    #define _MAXEFFECTEVENTS    32
+    #define _MAXEFFECTEVENTS    3
 
     typedef struct __attribute__((packed))
     {
@@ -14,6 +14,7 @@
         uint8_t weekday;       // 0-6
         uint8_t hour;          // 0-23
         uint8_t minute;        // 0-59
+        uint8_t second;        // 0-59
         uint8_t effect;        // Código de efecto
 
         uint8_t red;           // 0-255
@@ -25,7 +26,7 @@
     {
         uint8_t stid;       // 0xE3
         uint8_t listlen;    // Longitud del la lista de effectos por calendario
-        stEffectEvent EffectEvent[32];
+        stEffectEvent EffectEvent[_MAXEFFECTEVENTS];
         uint16_t crc;
     }stEffects;
 

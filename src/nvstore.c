@@ -26,6 +26,7 @@
 ------------------------------------------------------------------------------*/
 #include "nvstore.h"
 #include "_47l16.h"
+#include <string.h>
 
 static stConfigid Configid = {0};
 static stNVStore NVStore = {0};
@@ -175,7 +176,9 @@ uint8_t *_GetHubId(void)
                 memcpy(&Effects, &tmp, sizeof(stEffects));
                 return 0;
             }
+            else printf("error de crc1\n");
         }
+        else printf("copia 1 mal\n");
 
         /* -------------------------------------------------
         * Copia 1 corrupta → intentar Copia 2
@@ -294,4 +297,7 @@ uint8_t *_GetHubId(void)
     }
 
 #endif
+
+
+
 

@@ -64,6 +64,7 @@
 #include "fwupdate.h"
 #include "srtc.h"
 #include <stdbool.h>
+#include <string.h>
 
 uint32_t STM32_UUID[3] = {0};
 uint32_t TimeRunning = 0;
@@ -472,7 +473,47 @@ Reinit:
     // Si el EERAM se encuentra inicializa y sin errores
     if(!(Mainstatus & EERAM_ERR_MEM_FAILURE))
     {
-        _InitNVEffects();
+        int r = _InitNVEffects();
+    
+        printf("_InitNVEffects = %d\n",r);
+        printf("e1 = %X\n", EERAM_POS_EFFECTS_CP1);
+        printf("e2 = %X\n", EERAM_POS_EFFECTS_CP2);
+        
+
+#ifdef _USE_DEFAULT_NVRAMEFFECTS
+        //if(r)
+        {
+            stEffects Effects = {0};
+            
+            if(_NVEffectsWrite()) printf("Warning...\n");
+
+            for(int idx = 0; idx < 3; idx++)
+            {
+                Effects.EffectEvent[idx].enabled = true;
+                Effects.EffectEvent[idx].weekday = RTC_WEEKDAY_WEDNESDAY;
+                Effects.EffectEvent[idx].day = 0; // no es para un dia especifico
+                Effects.EffectEvent[idx].month = 0; // no se especifica (usa weekday)
+                Effects.EffectEvent[idx].hour = 12;
+                Effects.EffectEvent[idx].minute = 30;
+                Effects.EffectEvent[idx].second = 0;
+                
+                Effects.EffectEvent[idx].effect = 123;
+                Effects.EffectEvent[idx].red = 255;
+                Effects.EffectEvent[idx].blue = 1;
+                Effects.EffectEvent[idx].green = 128;
+            }
+            
+            Effects.listlen = 3;
+            stEffects * p_st = _GetNVEffects();
+            if(p_st) 
+            {
+                memcpy(p_st, &Effects, sizeof(Effects));
+                r = _NVEffectsWrite();
+                printf("Write NV Effects r = %d\n", r);
+            }
+        }        
+#endif
+
     }
 #endif
 

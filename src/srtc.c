@@ -70,6 +70,22 @@ void RTC_Soft_Tick(rtc_soft_t *rtc)
 #endif
 }
 
+uint8_t RTC_GetWeekDay(const rtc_soft_t *rtc)
+{
+    static const uint8_t t[] = {
+        0, 3, 2, 5, 0, 3,
+        5, 1, 4, 6, 2, 4
+    };
+
+    uint16_t y = rtc->year;
+
+    if (rtc->month < 3)
+        y--;
+
+    return (y + y / 4 - y / 100 + y / 400 +
+            t[rtc->month - 1] + rtc->day) % 7;
+}
+
 uint32_t RTC_Pack(const rtc_soft_t *rtc)
 {
     uint32_t v = 0;
