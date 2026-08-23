@@ -62,6 +62,7 @@
 #include "nvstore.h"
 #include "fw_version.h"
 #include "fwupdate.h"
+#include "srtc.h"
 #include <stdbool.h>
 
 uint32_t STM32_UUID[3] = {0};
@@ -302,6 +303,7 @@ uint16_t GetFlashSizeKB(void)
 
 void _1SecFunctions(void)
 {
+    RTC_Soft_Tick(_GetRtcPtr());
     TimeRunning++;
 }
    
@@ -313,7 +315,7 @@ void _1msFunctions(void)
 
 void _10msFunctions(void)
 {
-    static uint8_t xDiv = 0;
+    static uint8_t xDiv = 0, xDiv100ms = 0;
   
     _ProcLTProto();
     _FwUpdateCtrl();
@@ -322,13 +324,18 @@ void _10msFunctions(void)
     _ProcLEDEffect();
 #endif
 
-    if(xDiv++ >= 10)
+    if(xDiv100ms++ >= 50)
+    {
+        LedMonitor();
+        LedMonitorGreen();
+        xDiv100ms = 0;
+    }
+
+    if(xDiv++ >= 100)
     {
         _1SecFunctions();
         xDiv = 0;
         
-        LedMonitor();
-        LedMonitorGreen();
         //_test_eeram();
         //test_adc();
     }
@@ -458,6 +465,14 @@ Reinit:
         uint8_t dummydata[3] = {0x5A,0x5A,0x5A,0x5A};
         while(1)
             DMX_SendFrame(dummydata, sizeof(dummydata));
+    }
+#endif
+
+#ifdef _USE_DMX512
+    // Si el EERAM se encuentra inicializa y sin errores
+    if(!(Mainstatus & EERAM_ERR_MEM_FAILURE))
+    {
+        _InitNVEffects();
     }
 #endif
 

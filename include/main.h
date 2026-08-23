@@ -28,6 +28,8 @@
 #define _USE_DEBUG_NVSTORE
 //#define _DEBUG_RF
 #define _USE_DEBUG_FWUPDATE
+#define _USE_DEBUG_SRTC
+
 
 //#define _CLKMODE_EXTERNAL_8MHZ
 #define _CLKMODE_EXTERNAL_72MHZ

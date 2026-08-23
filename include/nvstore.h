@@ -3,6 +3,34 @@
 
 #include "main.h"
 
+#ifdef _USE_DMX512
+    #define _MAXEFFECTEVENTS    32
+
+    typedef struct __attribute__((packed))
+    {
+        uint8_t enabled;       // 0 = libre, 1 = activo
+        uint8_t day;           // 1-31
+        uint8_t month;         // 1-12
+        uint8_t weekday;       // 0-6
+        uint8_t hour;          // 0-23
+        uint8_t minute;        // 0-59
+        uint8_t effect;        // Código de efecto
+
+        uint8_t red;           // 0-255
+        uint8_t green;         // 0-255
+        uint8_t blue;          // 0-255
+    } stEffectEvent;
+
+    typedef struct __attribute__((packed))
+    {
+        uint8_t stid;       // 0xE3
+        uint8_t listlen;    // Longitud del la lista de effectos por calendario
+        stEffectEvent EffectEvent[32];
+        uint16_t crc;
+    }stEffects;
+
+#endif
+
 typedef enum
 {
     EERAM_POS_NVSTORE_CP1       = 0x000,
@@ -11,9 +39,13 @@ typedef enum
     EERAM_POS_EVENTS_CP1        = 0x040,
     EERAM_POS_EVENTS_CP2        = 0x058,
 
-    EERAM_POS_nu                = 0x06F,
+#ifdef _USE_DMX512
+    EERAM_POS_EFFECTS_CP1       = 0x06F,
+    EERAM_POS_EFFECTS_CP2       = EERAM_POS_EFFECTS_CP1 + sizeof(stEffects),
+#endif
+
     EERAM_POS_nu_end            = 0x7BF,
-    
+  
     EERAM_POS_MODEMCFG          = 0x7C0,
     EERAM_POS_MODEMCFG_end      = 0x7DF,
     
@@ -23,9 +55,10 @@ typedef enum
 
 typedef enum
 {
-    EERAM_ERR_MEM_FAILURE   = 1,
-    EERAM_ERR_UNCONFIG_DEV  = 2,
-   
+    EERAM_ERR_MEM_FAILURE       = 1,
+    EERAM_ERR_UNCONFIG_DEV      = 2,
+    EERAM_ERR_ST1_CORRUPTED     = 3,
+    EERAM_ERR_ST2_CORRUPTED     = 4,
 }envstoreerrs;
 
 typedef struct __attribute__((packed))
@@ -75,6 +108,8 @@ typedef struct __attribute__((packed))
 int _InitNVStore(void);
 int _NVCreateConfig(uint8_t *id);
 uint8_t *_GetHubId(void);
+stEffects *_GetNVEffects(void);
+int _InitNVEffects(void);
 
 
 #endif

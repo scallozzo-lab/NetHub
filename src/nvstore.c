@@ -32,6 +32,7 @@ static stNVStore NVStore = {0};
 static stNVEvents NVEvents = {0};
 #ifdef _NETHUBMODE
     static stModemCfg ModemCfg = {0};
+    static stEffects Effects = {0};
 #endif
 
 int _InitNVStore(void)
@@ -145,3 +146,152 @@ uint8_t *_GetHubId(void)
         return Configid.dev_id;   
     else return 0;
 }
+
+#ifdef _USE_DMX512
+
+
+    int _NVEffectsRead(void)
+    {
+        stEffects tmp;
+
+        /* -------------------------------------------------
+        * Intentar leer Copia 1
+        * ------------------------------------------------- */
+        if(!_eeram_read(_EERAM_DEV_ADDR,
+                        EERAM_POS_EFFECTS_CP1,
+                        (uint8_t*)&tmp,
+                        sizeof(stEffects)))
+        {
+            return EERAM_ERR_MEM_FAILURE;
+        }
+
+        if(tmp.stid == 0xE3)
+        {
+            uint16_t crc = crc_ccitt((uint8_t*)&tmp,
+                                    sizeof(stEffects) - 2);
+
+            if(crc == tmp.crc)
+            {
+                memcpy(&Effects, &tmp, sizeof(stEffects));
+                return 0;
+            }
+        }
+
+        /* -------------------------------------------------
+        * Copia 1 corrupta → intentar Copia 2
+        * ------------------------------------------------- */
+        if(!_eeram_read(_EERAM_DEV_ADDR,
+                        EERAM_POS_EFFECTS_CP2,
+                        (uint8_t*)&tmp,
+                        sizeof(stEffects)))
+        {
+            return EERAM_ERR_MEM_FAILURE;
+        }
+
+        if(tmp.stid == 0xE3)
+        {
+            uint16_t crc = crc_ccitt((uint8_t*)&tmp,
+                                    sizeof(stEffects) - 2);
+
+            if(crc == tmp.crc)
+            {
+                memcpy(&Effects, &tmp, sizeof(stEffects));
+                return 0;
+            }
+        }
+
+        /* Ninguna copia válida */
+        return EERAM_ERR_ST2_CORRUPTED;
+    }
+
+    int _NVEffectsWrite(void)
+    {
+        Effects.stid = 0xE3;
+
+        Effects.crc = crc_ccitt((uint8_t*)&Effects,
+                                sizeof(stEffects) - 2);
+
+        if(!_eeram_write(_EERAM_DEV_ADDR,
+                        EERAM_POS_EFFECTS_CP1,
+                        (uint8_t*)&Effects,
+                        sizeof(stEffects)))
+        {
+            return EERAM_ERR_MEM_FAILURE;
+        }
+
+        if(!_eeram_write(_EERAM_DEV_ADDR,
+                        EERAM_POS_EFFECTS_CP2,
+                        (uint8_t*)&Effects,
+                        sizeof(stEffects)))
+        {
+            return EERAM_ERR_MEM_FAILURE;
+        }
+
+        return 0;
+    }
+
+    int _InitNVEffects(void)
+    {
+        int ack;
+
+        ack = _NVEffectsRead();
+
+        if(ack)
+        {
+            printf("[_InitNVEffects] _NVEffectsRead Error %d\n", ack);
+            return ack;
+        }
+
+        #ifdef _USE_DEBUG_NVSTORE
+
+            printf("[_InitNVEffects] Effects OK\n");
+            printf("stid     = %02X\n", Effects.stid);
+            printf("listlen  = %02X\n", Effects.listlen);
+
+            for(int idx = 0; idx < 32; idx++)
+            {
+                stEffectEvent *event = &Effects.EffectEvent[idx];
+
+                printf("Effect[%02d] ", idx);
+
+                if(event->enabled)
+                {
+                    printf("EN "
+                        "date=%02d/%02d "
+                        "weekday=%02d "
+                        "time=%02d:%02d "
+                        "effect=%02X "
+                        "RGB=(%02X,%02X,%02X)\n",
+                        idx,
+                        event->day,
+                        event->month,
+                        event->weekday,
+                        event->hour,
+                        event->minute,
+                        event->effect,
+                        event->red,
+                        event->green,
+                        event->blue);
+                }
+                else
+                {
+                    printf("DIS\n");
+                }
+            }
+
+            printf("crc      = %04X\n", Effects.crc);
+
+        #endif
+
+        return 0;
+    }
+
+    stEffects *_GetNVEffects(void)
+    {
+        if(Effects.stid == 0xE3)
+            return &Effects;
+        else return NULL;
+    }
+
+#endif
+
