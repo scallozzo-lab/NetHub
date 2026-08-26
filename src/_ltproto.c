@@ -3,12 +3,28 @@
 #include "sx1278.h"
 #include "fw_version.h"
 #include "fwupdate.h"
+#include "_gnss.h"
 #include <string.h>
 
 stLTProtocol LTProtocol = {0};
 //stRxLTDatast1 RxLTDatast1[_CANT_MAX_SLV];
 //stRxLTDatast2 RxLTDatast2[_CANT_MAX_SLV];
 stRxLTData RxLTData[_CANT_MAX_SLV];
+
+void _SetHubStatus(uint8_t sts)
+{
+    LTProtocol.HubStatus |= sts;
+}
+
+void _ResetHubStatus(uint8_t sts)
+{
+    LTProtocol.HubStatus &= ~sts;
+}
+
+uint8_t _GetHubStatus(void)
+{
+    return LTProtocol.HubStatus;
+}
 
 uint8_t _GetEnabledLTX(uint8_t s)
 {
@@ -20,7 +36,6 @@ void ProcLCD(uint8_t flag)
     
     extern const uint8_t gear32x32[];
     extern const uint8_t altiva64x32[];
-
 
     // cada 500ms
     if(flag)
@@ -342,8 +357,6 @@ void _ProcLTProto(void)
             //printf("ready...\n");
             if(_GetSrvComCHFree())
             {
-                printf("tx LTHubStatus\n");
-        
                 stTxLTHubStatus TxLTHubStatus;
 
                 TxLTHubStatus.flag = _LT_FLAG;
@@ -354,10 +367,13 @@ void _ProcLTProto(void)
                 TxLTHubStatus.HubErrsts = 0;
                 TxLTHubStatus.HubEvent = 0;
                 TxLTHubStatus.TimeRunning = _GetTimeRunning();
+                
+                TxLTHubStatus.latitude_e7 = _GetGNSS()->latitude_e7;
+                TxLTHubStatus.longitude_e7 = _GetGNSS()->longitude_e7;
+                memcpy(&TxLTHubStatus.rtc, _GetRtcPtr(), sizeof(TxLTHubStatus.rtc));
+                
                 TxLTHubStatus.FwVersion = _GetFirmwareVer();
-                printf("ready to tx\n");
                 _TxServer(&TxLTHubStatus, sizeof(TxLTHubStatus));
-                printf("tx ok\n");
                 
                 LTProtocol.timeralive = _LTPROTO_TIMERALIVE;
             }

@@ -13,10 +13,29 @@
 
 stGNSS_Position GNSS_Position = {0};
 
+stGNSS_Position *_GetGNSS(void)
+{
+    return &GNSS_Position;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Local functions                                                             */
 /* -------------------------------------------------------------------------- */
+static uint32_t ASCII_ToBCD(const char *str, uint8_t digits)
+{
+    uint32_t value = 0;
+
+    for (uint8_t i = 0; i < digits; i++)
+    {
+        if (str[i] < '0' || str[i] > '9')
+            break;
+
+        value = (value << 4) | (uint32_t)(str[i] - '0');
+    }
+
+    return value;
+}
+
 static int32_t GNSS_StringToScaledInt(const char *str, uint32_t decimals)
 {
     int32_t integer_part = 0;
@@ -308,8 +327,8 @@ bool GNSS_ParseInfo(const char *rx, stGNSS_Position *gnss)
 
                     if (field[0] != '\0')
                     {
-                        gnss->date =
-                            (uint32_t)strtoul(field, NULL, 10);
+                        //gnss->date = (uint32_t)strtoul(field, NULL, 10);
+                        gnss->date = ASCII_ToBCD(field,6);
                     }
 
                     break;
@@ -334,8 +353,8 @@ bool GNSS_ParseInfo(const char *rx, stGNSS_Position *gnss)
                          *
                          * The fractional seconds are ignored.
                          */
-                        gnss->time =
-                            (uint32_t)strtoul(field, NULL, 10);
+                        //gnss->time = (uint32_t)strtoul(field, NULL, 10);
+                        gnss->time = ASCII_ToBCD(field,6);
                     }
 
                     break;
@@ -551,11 +570,11 @@ void GNSS_DebugPrint(const stGNSS_Position *gnss)
     /* Date / Time                                                            */
     /* ---------------------------------------------------------------------- */
 
-    printf("Date        : %06lu\r\n",
+    printf("Date        : %0X\r\n",
            (unsigned long)gnss->date);
 
 
-    printf("Time        : %06lu\r\n",
+    printf("Time        : %0X\r\n",
            (unsigned long)gnss->time);
 
 

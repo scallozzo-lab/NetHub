@@ -30,6 +30,7 @@ extern stGNSS_Position GNSS_Position;
 
 bool GNSS_ParseInfo(const char *rx, stGNSS_Position *gnss);
 void GNSS_DebugPrint(const stGNSS_Position *gnss);
+stGNSS_Position *_GetGNSS(void);
 
 
 #endif

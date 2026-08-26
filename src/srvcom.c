@@ -787,7 +787,7 @@ void _ProcSrvCom(void)
                 printf("[_ProcSrvCom] RX SIMCOM_GNSSINFO...%s\n", prxcmd_data);
 #endif                
                 bool result = GNSS_ParseInfo(prxcmd_data, &GNSS_Position);
-
+                if(result) _SetHubStatus(HUB_STS_GNSS_RDY);
 #ifdef _USE_DEBUG_GNSS
                 printf("GNSS res=%d\n", result);
                 GNSS_DebugPrint(&GNSS_Position);                

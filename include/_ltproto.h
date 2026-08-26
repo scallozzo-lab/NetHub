@@ -4,6 +4,7 @@
 #include "main.h"
 //#include "_IOfncs.h"
 #include "srvcom.h"
+#include "srtc.h"
 
 //------------------------------------------------- LT - Config -----------------------------------------------------
 #define _LTPROTO_TIMERALIVE         300
@@ -68,6 +69,17 @@ typedef enum
     SSTATUS_STS_FWUPDATE_ENABLE = BIT7    
 }esstatus;
 
+typedef enum
+{
+    HUB_STS_GNSS_RDY            = BIT0,
+    HUB_STS_res1                = BIT1,
+    HUB_STS_res2                = BIT2,
+    HUB_STS_res3                = BIT3,
+    HUB_STS_res4                = BIT4,
+    HUB_STS_res5                = BIT5,
+    HUB_STS_res6                = BIT6,
+    HUB_STS_DMX_ENABLED         = BIT7
+}ehubstatus_t;
 
 typedef struct
 {
@@ -133,6 +145,11 @@ typedef struct __attribute__((packed))
     uint8_t HubErrsts;
     uint8_t HubEvent;   // <> 0 = Event
     uint32_t TimeRunning;
+    
+    int32_t latitude_e7;
+    int32_t longitude_e7;
+    rtc_soft_t rtc;
+    
     uint16_t FwVersion;
     uint16_t Crc;
 }stTxLTHubStatus;
@@ -152,6 +169,10 @@ typedef struct __attribute__((packed))
     uint8_t DevbitList[13];             // Device listing expresado en bits bit0 = Dev1, bit1 = Dev2, etc.
     uint8_t HubVer[3];
     uint8_t LTVer[3];
+    
+    uint8_t TxConfig;                   // Tiempo expresado en segundos para la transmisión de hubstatus
+    rtc_soft_t rtc;                     // RTC propuesto
+    
     uint16_t Crc;
 }stRxLTHubStatus;
 
@@ -293,6 +314,10 @@ typedef enum
 void _ProcLTProto(void);
 void _ProcRxLT(uint8_t *xbuff, uint16_t *len);
 void _InitLTProtocol(void);
+void _SetHubStatus(uint8_t sts);
+void _ResetHubStatus(uint8_t sts);
+uint8_t _GetHubStatus(void);
+
 
 
 #endif
