@@ -4,7 +4,7 @@
 #include "main.h"
 
 #ifdef _USE_DMX512
-    #define _MAXEFFECTEVENTS    3
+    #define _MAXEFFECTEVENTS    32
 
     typedef struct __attribute__((packed))
     {
@@ -111,6 +111,7 @@ int _NVCreateConfig(uint8_t *id);
 uint8_t *_GetHubId(void);
 stEffects *_GetNVEffects(void);
 int _InitNVEffects(void);
+int _NVEffectsWrite(void);
 
 
 #endif

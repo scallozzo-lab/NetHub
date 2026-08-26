@@ -13,6 +13,10 @@
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
  
+ [25/08/2026] SCALLOZZO
+    # Se corrige I2C para EERAM que hacia rollover después de 255 bytes.
+    # Se agrega _InitNVEffects
+ 
  [22/08/2026] SCALLOZZO
     # Se agrega RX USART1 por DMA, para el SIM7670, se habilitada con _USART1_DMA_MODE
  
@@ -479,15 +483,14 @@ Reinit:
         printf("e1 = %X\n", EERAM_POS_EFFECTS_CP1);
         printf("e2 = %X\n", EERAM_POS_EFFECTS_CP2);
         
-
 #ifdef _USE_DEFAULT_NVRAMEFFECTS
-        //if(r)
+        if(r)
         {
             stEffects Effects = {0};
             
             if(_NVEffectsWrite()) printf("Warning...\n");
 
-            for(int idx = 0; idx < 3; idx++)
+            for(int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
             {
                 Effects.EffectEvent[idx].enabled = true;
                 Effects.EffectEvent[idx].weekday = RTC_WEEKDAY_WEDNESDAY;
@@ -503,7 +506,7 @@ Reinit:
                 Effects.EffectEvent[idx].green = 128;
             }
             
-            Effects.listlen = 3;
+            Effects.listlen = _MAXEFFECTEVENTS;
             stEffects * p_st = _GetNVEffects();
             if(p_st) 
             {

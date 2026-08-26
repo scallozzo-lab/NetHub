@@ -249,9 +249,9 @@ uint8_t *_GetHubId(void)
 
             printf("[_InitNVEffects] Effects OK\n");
             printf("stid     = %02X\n", Effects.stid);
-            printf("listlen  = %02X\n", Effects.listlen);
+            printf("listlen  = %d\n", Effects.listlen);
 
-            for(int idx = 0; idx < 32; idx++)
+            for(int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
             {
                 stEffectEvent *event = &Effects.EffectEvent[idx];
 
@@ -259,12 +259,7 @@ uint8_t *_GetHubId(void)
 
                 if(event->enabled)
                 {
-                    printf("EN "
-                        "date=%02d/%02d "
-                        "weekday=%02d "
-                        "time=%02d:%02d "
-                        "effect=%02X "
-                        "RGB=(%02X,%02X,%02X)\n",
+                    printf("EN %d date=%02d/%02d weekday=%02d time=%02d:%02d effect=%02X RGB=(%02X,%02X,%02X)\n",
                         idx,
                         event->day,
                         event->month,
@@ -299,5 +294,38 @@ uint8_t *_GetHubId(void)
 #endif
 
 
+void testnv(void)
+{
+#define LENPOS  512
+
+    static uint8_t t1[512];
+    static uint8_t t2[512];
+
+    printf("size =%d\n", sizeof(stEffects));
+
+    for(int x=0;x<LENPOS;x++) t1[x] = (uint8_t)x;
+    
+    
+    int rr = _eeram_write(_EERAM_DEV_ADDR,
+                    EERAM_POS_EFFECTS_CP1,
+                    t1,
+                    LENPOS);
+      
+        printf("wrr = %d\n",rr);
+
+        rr = _eeram_read(_EERAM_DEV_ADDR,
+                    EERAM_POS_EFFECTS_CP1,
+                    t2,
+                    LENPOS);
+printf("rrr = %d\n",rr);
 
 
+    for(int x=0;x<LENPOS;x++) 
+    {
+        if(t1[x] != t2[x]) printf("Error pos %X-%x-%x\n", x, t1[x], t2[x]);
+     
+    }        
+
+    printf("Test NV OK!!!!");
+
+}

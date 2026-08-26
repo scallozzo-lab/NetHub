@@ -197,7 +197,7 @@ int I2C1_readRegister(uint8_t devAddr, uint8_t regAddr, uint8_t readsize, uint8_
 }
 
 
-int I2C1_readRegister16(uint8_t devAddr, uint16_t regAddr, uint8_t readsize, uint8_t *pdest)
+int I2C1_readRegister16(uint8_t devAddr, uint16_t regAddr, uint16_t readsize, uint8_t *pdest)
 {
     uint8_t data;
     int ack;
