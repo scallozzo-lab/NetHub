@@ -2,6 +2,7 @@
 #include "usart.h"
 #include "srvcom.h"
 #include "_ltproto.h"
+#include "_gnss.h"
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -252,6 +253,8 @@ uint16_t CheckModemRx(uint8_t *rx, uint16_t len, uint8_t **rxcmd, uint8_t **rxda
             uret |= SIMCOM_TXSYNCRO;
         if(!memcmp(prx, "+IPERROR:Nodata",15))
             uret |= SIMCOM_RX_NODATA;
+        if(!memcmp(prx, "+CGNSSINFO:",11))
+            uret |= SIMCOM_GNSSINFO;
     }
     else 
         printf("[CheckModemRx] Error No <CR><LF> [%02X-%02X]\n", rx[0], rx[1]);
@@ -685,6 +688,19 @@ void _ProcSrvCom(void)
         else if(--rxretry == 0) _TxATCom(_AT_NOAUTORX);
         break;
 
+        case SRVCOM_STG_ENABLEGNSS:
+        
+        if(rxcmd & SIMCOM_ANSWER_OK)
+        {
+            timerrx = 0;
+#ifdef _USE_DEBUG_SRVCOM
+            printf("[_ProcSrvCom] GNSS ENABLED.\n");
+#endif                
+            SrvCom.stage++;
+        }        
+        else if(--rxretry == 0) _TxATCom(_AT_POWERON_GNSS);   
+        break;
+
         case SRVCOM_STG_IDLE:
         {
             static uint16_t exttimer = 0;
@@ -764,6 +780,20 @@ void _ProcSrvCom(void)
                         printf("[_ProcSrvCom] Ip: ERROR %s\n", aip);
                 } 
             }        
+            else if(rxcmd & SIMCOM_GNSSINFO)
+            {
+
+#ifdef _USE_DEBUG_SRVCOM
+                printf("[_ProcSrvCom] RX SIMCOM_GNSSINFO...%s\n", prxcmd_data);
+#endif                
+                bool result = GNSS_ParseInfo(prxcmd_data, &GNSS_Position);
+
+#ifdef _USE_DEBUG_GNSS
+                printf("GNSS res=%d\n", result);
+                GNSS_DebugPrint(&GNSS_Position);                
+#endif
+
+            }
             else if(exttimer) exttimer--;
             else 
             {        
@@ -775,8 +805,9 @@ void _ProcSrvCom(void)
                         _TxATCom(_AT_CHECKIP);
                     else 
                     { 
-                        _TxATCom(_AT_GETRXSTATUS);        
-                        SrvCom.status |= SRVCOM_STS_RXREQ_PENDING;
+                        //_TxATCom(_AT_GETRXSTATUS);        
+                        //SrvCom.status |= SRVCOM_STS_RXREQ_PENDING;
+                        _TxATCom(_AT_GETGNSSINFO);
                     }
                 }
                 else 

@@ -21,7 +21,7 @@
 
 #define _USE_DEBUG_SRVCOM
 #define _USE_DEBUG_TXRX
-
+#define _USE_DEBUG_GNSS
 //#define _USE_DEBUG_TX_SRVCOM            
    
 //#define _USE_DEBUG_TXRXSLV

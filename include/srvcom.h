@@ -37,9 +37,6 @@
 #define _CANTMAX_TXSRV_RETRY    20
 #define _CANTMAX_CONN_RETRY     30
 
-//#define _COMINTDISABLE          0
-//#define _COMINTCLEARFIFO        2
-
 
 #define _AT_READY_1     "*ATREADY:1"                                    // UCC de inicio
 #define _AT_CPIN        "AT+CPIN?"                                      // Rx-> +CPIN: READY
@@ -56,6 +53,10 @@
 //#define _AT_GETRXSTATUS "AT+CIPRXGET=2,0,1024" // AT+CIPRXGET=3,0,720
 #define _AT_GETRXDATA   "AT+CIPRXGET=2,0,128"
 #define _AT_DISABLE_URC "AT+CIURC=0"
+
+#define _AT_POWERON_GNSS    "AT+CGNSSPWR=1"
+#define _AT_GETGNSSINFO     "AT+CGNSSINFO" // +CGNSSINFO: 1,1,20260825221730.000,-34.58,-58.54,25.3,0.5,123.4,8,1.2,1.8,2.1,12,0.9
+
 #ifdef _USE_SIMCOM_NOECHO
     #define _AT_    "ATE0"
 #else
@@ -91,6 +92,9 @@ typedef enum
     SRVCOM_STG_INITNET,
     SRVCOM_STG_CONFSOCKET,
     SRVCOM_STG_SETMODE,
+    
+    SRVCOM_STG_ENABLEGNSS,
+
     SRVCOM_STG_IDLE,
     SRVCOM_STG_TRANSMIT,
     SRVCOM_STG_RECEIVE,
@@ -127,7 +131,7 @@ typedef enum
     SIMCOM_RX_PKQ           = BIT11,
     SIMCOM_RX_NODATA        = BIT12,
     SIMCOM_RESTART          = BIT13,
-    SIMCOM_res14            = BIT14,
+    SIMCOM_GNSSINFO         = BIT14,
     SIMCOM_res15            = BIT15
 }eModemRxCmds;
 
