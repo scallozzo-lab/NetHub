@@ -15,6 +15,11 @@
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
  
+ [27/08/2026] SCALLOZZO
+    # Se agrega manejo de TX USART1 por DMA.
+    # Se mejora el manejo del RTC desde interrupción.
+    # Se agrega flag de timeout de comunicación entre Hub<->Srv  
+ 
  [26/08/2026] SCALLOZZO
     # Se agrega RTC desde GPS con calculo de fecha y hora local  
  
@@ -316,7 +321,21 @@ uint16_t GetFlashSizeKB(void)
 
 void _1SecFunctions(void)
 {
-    RTC_Soft_Tick(_GetRtcPtr());
+    //RTC_Soft_Tick(_GetRtcPtr());
+    rtc_soft_t *rtc = _GetRtcPtr();
+    
+    #ifdef _USE_DEBUG_SRTC
+    // DEBUG: imprimir fecha y hora
+    printf("FyH: %02d/%02d/%04d %02d:%02d:%02d\r\n",
+           rtc->day,
+           rtc->month,
+           rtc->year,
+           rtc->hour,
+           rtc->min,
+           rtc->sec);
+#endif
+
+    
     TimeRunning++;
 }
    
@@ -344,7 +363,7 @@ void _10msFunctions(void)
         xDiv100ms = 0;
     }
 
-    if(xDiv++ >= 100)
+    if(xDiv++ >= 95)
     {
         _1SecFunctions();
         xDiv = 0;
@@ -528,6 +547,10 @@ Reinit:
     }
 #endif
 
+
+#ifdef _USE_DUMMY_TEST_SRTC
+    testrtc();
+#endif
 
     // Ambos canales apagados
     _SetPWM_CH4(0xffffffflu);

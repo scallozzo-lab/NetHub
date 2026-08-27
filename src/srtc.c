@@ -1,6 +1,6 @@
 #include "srtc.h"
 
-static rtc_soft_t sRTC = {0};
+static volatile rtc_soft_t sRTC = {0};
 
 static uint8_t is_leap_year(uint16_t year)
 {
@@ -87,9 +87,19 @@ void Timestamp_ToRTC(uint64_t timestamp, rtc_soft_t *rtc)
     rtc->day = days + 1;
 }
 
-rtc_soft_t *_GetRtcPtr(void)
+rtc_soft_t *_GetIntRtcPtr(void)
 {
     return &sRTC;    
+}
+
+rtc_soft_t *_GetRtcPtr(void)
+{
+    static rtc_soft_t rtc = {0};
+ 
+    __disable_irq();
+    rtc = sRTC;
+     __enable_irq();
+    return &rtc;    
 }
 
 void _SetsRTC(rtc_soft_t st)
@@ -126,7 +136,8 @@ void RTC_Soft_Tick(rtc_soft_t *rtc)
         }
     }
 
-#ifdef _USE_DEBUG_SRTC
+/*
+    #ifdef _USE_DEBUG_SRTC
     // DEBUG: imprimir fecha y hora
     printf("FyH: %02d/%02d/%04d %02d:%02d:%02d\r\n",
            rtc->day,
@@ -136,6 +147,7 @@ void RTC_Soft_Tick(rtc_soft_t *rtc)
            rtc->min,
            rtc->sec);
 #endif
+*/
 }
 
 uint8_t RTC_GetWeekDay(const rtc_soft_t *rtc)
@@ -179,3 +191,40 @@ void RTC_Unpack(uint32_t v, rtc_soft_t *rtc)
     rtc->min   = (v >> 6)  & 0x3F;
     rtc->sec   =  v        & 0x3F;
 }
+
+#ifdef _USE_DUMMY_TEST_SRTC
+    void testrtc(void)
+    {
+        rtc_soft_t rtc;
+        rtc.day = 29;
+        rtc.month = 2;
+        rtc.year = 2026;
+        rtc.hour = 10;
+        rtc.min = 50;
+        rtc.sec = 1;
+
+        printf("GNSS RTC: %02u/%02u/%04u %02u:%02u:%02u\r\n",
+                            rtc.day,
+                            rtc.month,
+                            rtc.year,
+                            rtc.hour,
+                            rtc.min,
+                            rtc.sec);
+                                                    
+        int64_t tstamp = RTC_ToTimestamp(&rtc); 
+        rtc_soft_t newrtc;
+        
+        printf("[_ProcSrvCom] RTC_ToTimestamp...%llu\n", (unsigned long long)tstamp);
+        tstamp += TIMEZONE_ARGENTINA_SECONDS;
+        printf("[_ProcSrvCom] UTC -3...%llu\n", (unsigned long long)tstamp);
+        Timestamp_ToRTC((uint64_t)tstamp, &newrtc);
+        
+        printf("ROUNDTRIP  : %02u/%02u/%04u %02u:%02u:%02u\r\n",
+            newrtc.day,
+            newrtc.month,
+            newrtc.year,
+            newrtc.hour,
+            newrtc.min,
+            newrtc.sec);
+    }
+#endif

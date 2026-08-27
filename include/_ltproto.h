@@ -8,6 +8,7 @@
 
 //------------------------------------------------- LT - Config -----------------------------------------------------
 #define _LTPROTO_TIMERALIVE         300
+#define _LTPROTO_TIMEOUTSRV         1000
 #define _LTX_TIMESLOT               130//(90)
 #define _MAXFRAMEFWUPDATE           128 //1024        // Valor máximo de frame de fw update (el servicio puede elegir uno menor, siendo este el tope)
 //------------------------------------------------- LT --------------------------------------------------------------
@@ -36,6 +37,7 @@ typedef struct
 {
     uint8_t status;
     uint16_t timeralive;
+    uint16_t Srvtimerrx;
     uint16_t seqId;
     uint8_t HubStatus;
     uint8_t HubId[6];           // HubId tomado de la configuración 
@@ -77,7 +79,7 @@ typedef enum
     HUB_STS_res3                = BIT3,
     HUB_STS_res4                = BIT4,
     HUB_STS_res5                = BIT5,
-    HUB_STS_res6                = BIT6,
+    HUB_STS_COM_SYNCHRONIZED    = BIT6,
     HUB_STS_DMX_ENABLED         = BIT7
 }ehubstatus_t;
 
@@ -317,6 +319,7 @@ void _InitLTProtocol(void);
 void _SetHubStatus(uint8_t sts);
 void _ResetHubStatus(uint8_t sts);
 uint8_t _GetHubStatus(void);
+uint16_t _GetCurrentSeq(void);
 
 
 

@@ -739,10 +739,11 @@ void _ProcSrvCom(void)
                     
                     for(int x2=0;x2<localbuflen[x];x2++)
                         printf("%02X",localbuf[x][x2]);
-                    SrvCom.rxstat++;
+                //    SrvCom.rxstat++;
                     printf("]\n");
                 }
 #endif               
+                SrvCom.rxstat++;
                 _ProcRxLT((uint8_t*)localbuf, localbuflen);
             }
             // Si existe paquete para transmitir...
@@ -878,12 +879,15 @@ void _ProcSrvCom(void)
             {
                 if(gralrx++ >= _CANTMAX_TXSRV_RETRY_TO)
                 {
+                    SrvCom.stage = SRVCOM_STG_IDLE;   
+        /*
                     printf("MODEM RESTART Timeout...\n");
                     gralrx = 0;
                     _InitSrvCom(0);
-                }
+      */
+                    }
                 else 
-                    printf("TX SYNCRO timeout\n");
+                    printf("TX SYNCRO timeout Seq %04X\n", _GetCurrentSeq());
             }
             else
             {
@@ -894,6 +898,7 @@ void _ProcSrvCom(void)
                     _InitSrvCom(0);
                 }
             }
+            
             SrvCom.status |= SRVCOM_STS_ENABLERX;
             rxtimeout = _TIMERXTOUTSYNCRO;
             timerrx = _TIMERRXTXDONE;
@@ -916,7 +921,9 @@ void _ProcSrvCom(void)
             }
             else 
             {
+#ifdef _USE_DEBUG_TXRX          
                 printf("TX DONE!\n");
+#endif
                 SrvCom.txstat++;
             }
             SrvCom.stage = SRVCOM_STG_IDLE;   

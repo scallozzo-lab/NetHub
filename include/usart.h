@@ -3,9 +3,11 @@
 
 #include "main.h"
 
-#define UART_RX_BUF_SIZE 2048
+#define UART_RX_BUF_SIZE        2048
+#define _MAX_UART_TXBUFFER      1500
 
 #define _USART1_DMA_MODE
+#define _USART1_DMA_TX_MODE
 
 #define _COMINTDISABLE          0
 #define _COMINTCLEARFIFO        2

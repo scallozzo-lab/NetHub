@@ -12,13 +12,21 @@ static volatile uint8_t overrun_u1  = 0;
 static uint32_t USART_BRR_FromPCLK(uint32_t pclk, uint32_t baud);
 #endif
 
-/*
-void USART1_IRQHandler(void)
+#ifdef _USART1_DMA_TX_MODE
+    static uint8_t tx_dmabuf[_MAX_UART_TXBUFFER];
+
+void DMA1_Channel4_IRQHandler(void)
 {
-    if (USART1->SR & USART_SR_RXNE)
-        rx_buf[rx_idx++ % UART_RX_BUF_SIZE] = USART1->DR;
+    if (DMA1->ISR & DMA_ISR_TCIF4)
+    {
+        DMA1->IFCR = DMA_IFCR_CTCIF4;
+
+        DMA1_Channel4->CCR &= ~DMA_CCR_EN;
+
+        USART1->CR3 &= ~USART_CR3_DMAT;
+    }
 }
-*/
+#endif
 
 void USART1_IRQHandler(void)
 {
@@ -178,6 +186,55 @@ void USART1_Init(uint32_t _sysclkfreq, uint8_t _irq)
      */
 
     DMA1_Channel5->CCR |= DMA_CCR_EN;
+
+#ifdef _USART1_DMA_TX_MODE
+
+    /*
+    * -----------------------------------------------------
+    * DMA1 Channel 4 = USART1 TX
+    * -----------------------------------------------------
+    */
+
+    DMA1_Channel4->CCR = 0;
+
+    /*
+    * Limpiar flags pendientes del Channel 4
+    */
+    DMA1->IFCR =
+        DMA_IFCR_CGIF4 |
+        DMA_IFCR_CTCIF4 |
+        DMA_IFCR_CHTIF4 |
+        DMA_IFCR_CTEIF4;
+
+    /*
+    * Dirección periférico
+    */
+    DMA1_Channel4->CPAR =
+        (uint32_t)&USART1->DR;
+
+    /*
+    * El buffer y longitud se configuran
+    * cada vez que se llama USART1_tx()
+    */
+
+    /*
+     * MINC = incrementar memoria
+     * DIR  = memoria -> periférico
+     * TCIE = interrupción al terminar
+     */
+    DMA1_Channel4->CCR =
+        DMA_CCR_MINC |
+        DMA_CCR_DIR  |
+        DMA_CCR_TCIE;
+
+         /*
+    
+    /*
+    * Habilitar IRQ del DMA Channel 4
+    */
+    NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+#endif
+
 
 
     (void)_irq;
@@ -476,11 +533,82 @@ uint8_t *USART1_rx(uint16_t *rxlen, uint8_t irqf)
 }
 #endif
 
+#ifdef _USART1_DMA_TX_MODE
+int USART1_tx(uint8_t *buf, uint16_t len)
+{
+    if (buf == NULL || len == 0)
+        return 0;
+
+    if (len > _MAX_UART_TXBUFFER)
+        return 0;
+
+    /*
+     * Esperar hasta que el DMA TX esté libre
+     */
+    
+    // DMA busy?
+    while (DMA1_Channel4->CCR & DMA_CCR_EN);
+    /*
+     * Copiar los datos al buffer interno.
+     * A partir de acá, el buffer original puede reutilizarse.
+     */
+    memcpy(tx_dmabuf, buf, len);
+
+    /*
+     * Limpiar flags de DMA Channel 4
+     */
+    DMA1->IFCR =
+        DMA_IFCR_CGIF4 |
+        DMA_IFCR_CTCIF4 |
+        DMA_IFCR_CHTIF4 |
+        DMA_IFCR_CTEIF4;
+
+    /*
+     * Configurar DMA1 Channel 4
+     *
+     * USART1_TX -> DMA1 Channel 4
+     */
+    DMA1_Channel4->CPAR =
+        (uint32_t)&USART1->DR;
+
+    DMA1_Channel4->CMAR =
+        (uint32_t)tx_dmabuf;
+
+    DMA1_Channel4->CNDTR =
+        len;
+
+    /*
+     * Configuración:
+     *  - MINC: incrementar dirección de memoria
+     *  - TCIE: interrupción al terminar
+     */
+
+    DMA1_Channel4->CCR =
+            DMA_CCR_MINC |
+            DMA_CCR_DIR  |
+            DMA_CCR_TCIE;
+
+    /*
+     * Habilitar DMA para TX del USART1
+     */
+    USART1->CR3 |= USART_CR3_DMAT;
+
+    /*
+     * Arrancar DMA
+     */
+    DMA1_Channel4->CCR |= DMA_CCR_EN;
+
+    return 1;
+}
+#else
 int USART1_tx(uint8_t *buf, uint16_t len)
 {
     for(int x=0;x<len;x++) USART1_SendChar(buf[x]);
     return 1;
 }
+#endif
+
+
 
 uint8_t USART1_GetOVR(void)
 {

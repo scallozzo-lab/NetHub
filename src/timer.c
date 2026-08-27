@@ -3,6 +3,7 @@
 
 
 #include "stm32f1xx.h"
+#include "srtc.h"
 
 static
 volatile uint32_t _MainTimerms = 0;
@@ -10,6 +11,7 @@ volatile uint32_t _MainTimerms = 0;
 void _UpdateTimer(void)
 {
     _MainTimerms++;
+    if((_MainTimerms % 950) == 0) RTC_Soft_Tick(_GetIntRtcPtr());
 }
 
 // Callback de usuario

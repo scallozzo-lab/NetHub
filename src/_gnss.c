@@ -218,10 +218,11 @@ bool GNSS_ParseInfo(const char *rx, stGNSS_Position *gnss)
             /*
              * Debug fields.
              */
+#ifdef _USE_DEBUG_GNSS
             printf("[GNSS] FIELD %u = [%s]\r\n",
                    (unsigned int)field_num,
                    field);
-
+#endif
 
             switch (field_num)
             {

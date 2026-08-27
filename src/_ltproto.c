@@ -26,6 +26,11 @@ uint8_t _GetHubStatus(void)
     return LTProtocol.HubStatus;
 }
 
+uint16_t _GetCurrentSeq(void)
+{
+    return LTProtocol.seqId;
+}
+
 uint8_t _GetEnabledLTX(uint8_t s)
 {
     return (s < _CANT_MAX_SLV)? LTProtocol.LTScan[s] : 0;   
@@ -122,6 +127,8 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                     stRxLTHubStatus *RxLTHubStatus = (stRxLTHubStatus *)rxbuff;
                     if(LTProtocol.seqId == RxLTHubStatus->Seq)
                     {
+                        LTProtocol.Srvtimerrx = _LTPROTO_TIMEOUTSRV;
+                        _SetHubStatus(HUB_STS_COM_SYNCHRONIZED);   
 #ifdef _USE_DEBUG_TXRX
                         printf("[_ProcRxLT] Rx Cmd HUBStatus...\n");
                         printf("flag = %02X\n", RxLTHubStatus->flag);
@@ -204,6 +211,9 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
             {
                 stRxLTFwFrame *RxLTFwFrame = (stRxLTFwFrame *)rxbuff;
 
+                LTProtocol.Srvtimerrx = _LTPROTO_TIMEOUTSRV;
+                _SetHubStatus(HUB_STS_COM_SYNCHRONIZED);   
+
 #ifdef _USE_DEBUG_TXRX
                 printf("[_ProcRxLT] Rx Cmd LTFwFrame\n");
 
@@ -269,6 +279,10 @@ void _ProcLTProto(void)
 {
     static uint8_t xdiv = 0;
     
+    if(LTProtocol.Srvtimerrx) LTProtocol.Srvtimerrx--;
+    else 
+        _ResetHubStatus(HUB_STS_COM_SYNCHRONIZED);   
+     
     if(xdiv++ >= 50)
     {
         ProcLCD(0);

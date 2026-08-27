@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "pwm.h"
+#include "usart.h"
 
 #define _SIM7670_POWER_ON  _SetPWM_CH1(0lu)
 #define _SIM7670_POWER_OFF _SetPWM_CH1(0xfffffffflu)
@@ -13,7 +14,8 @@
 #define _SRVCOMUARTBAUD     115200
 #define _MAXSRVRXBUFFER     128
 #define _CANTMAXSLOTS       8
-#define _MAXSRVTXBUFFER     1500
+
+//#define _MAXSRVTXBUFFER     1500
 
 #define _TIMEBASE 10
 
@@ -68,9 +70,9 @@ typedef struct srvcom
 {
     uint8_t stage;
     uint8_t status;
-    uint8_t txlast[_MAXSRVTXBUFFER];
+    uint8_t txlast[_MAX_UART_TXBUFFER];
     uint16_t txlen;
-    uint8_t txsrvdata[_MAXSRVTXBUFFER];
+    uint8_t txsrvdata[_MAX_UART_TXBUFFER];
     uint16_t txsrvdatalen;
     uint32_t netip;
     uint16_t rxstat;

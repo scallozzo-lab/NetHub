@@ -32,6 +32,7 @@ typedef enum
 
 
 rtc_soft_t *_GetRtcPtr(void);
+rtc_soft_t *_GetIntRtcPtr(void);
 void _SetsRTC(rtc_soft_t st);
 void RTC_Soft_Tick(rtc_soft_t *rtc);
 uint8_t RTC_GetWeekDay(const rtc_soft_t *rtc);
