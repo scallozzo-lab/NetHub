@@ -9,10 +9,14 @@
  # [MODEM] A veces la transmisiones dan timeout y no vuelve a enviar.                                               [Corregido]
  # [MODEM] Corregir que pueda detectar desconexión en standby y volver a iniciar.                                   [Corregido]
  # [MODEM] Verificar: Si no hay servidor, o el modem no conecta debe seguir usando GNSS 
+ # [SRTC]  Verificar: Conversión UTC a TimeStamp tiene un desvio de unos 6 minutos
  # [LCD] Mejorar que solo imprima cuando haya cambios.
  # [LCD] Implementar gráficos y segundo display.
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
+ 
+ [26/08/2026] SCALLOZZO
+    # Se agrega RTC desde GPS con calculo de fecha y hora local  
  
  [26/08/2026] SCALLOZZO
     # Se agrega lectura del GPS/GNSS.  

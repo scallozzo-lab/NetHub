@@ -19,6 +19,74 @@ static uint8_t days_in_month(uint8_t month, uint16_t year)
     return days[month - 1];
 }
 
+uint64_t RTC_ToTimestamp(const rtc_soft_t *rtc)
+{
+    uint64_t days = 0;
+    uint16_t year;
+
+    /* Días completos desde 1970 hasta el año anterior */
+    for (year = 1970; year < rtc->year; year++)
+    {
+        days += ((year % 4 == 0 &&
+                  (year % 100 != 0 || year % 400 == 0)) ? 366 : 365);
+    }
+
+    /* Días de los meses anteriores */
+    for (uint8_t month = 1; month < rtc->month; month++)
+    {
+        days += days_in_month(month,rtc->year);
+    }
+
+    /* Días del mes actual */
+    days += rtc->day - 1;
+
+    return (days * 86400ULL) +
+           ((uint64_t)rtc->hour * 3600ULL) +
+           ((uint64_t)rtc->min  * 60ULL) +
+           rtc->sec;
+}
+
+void Timestamp_ToRTC(uint64_t timestamp, rtc_soft_t *rtc)
+{
+    uint64_t days;
+    uint32_t seconds;
+    uint16_t year = 1970;
+
+    days = timestamp / 86400ULL;
+    seconds = timestamp % 86400ULL;
+
+    rtc->hour = seconds / 3600;
+    seconds %= 3600;
+
+    rtc->min = seconds / 60;
+    rtc->sec = seconds % 60;
+
+    while (1)
+    {
+        uint16_t days_year =
+            ((year % 4 == 0 &&
+              (year % 100 != 0 || year % 400 == 0)) ? 366 : 365);
+
+        if (days < days_year)
+            break;
+
+        days -= days_year;
+        year++;
+    }
+
+    rtc->year = year;
+
+    rtc->month = 1;
+
+    while (days >= days_in_month(rtc->month, year))
+    {
+        days -= days_in_month(rtc->month, year);
+        rtc->month++;
+    }
+
+    rtc->day = days + 1;
+}
+
 rtc_soft_t *_GetRtcPtr(void)
 {
     return &sRTC;    

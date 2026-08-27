@@ -787,7 +787,57 @@ void _ProcSrvCom(void)
                 printf("[_ProcSrvCom] RX SIMCOM_GNSSINFO...%s\n", prxcmd_data);
 #endif                
                 bool result = GNSS_ParseInfo(prxcmd_data, &GNSS_Position);
-                if(result) _SetHubStatus(HUB_STS_GNSS_RDY);
+                if(result) 
+                {
+                    _SetHubStatus(HUB_STS_GNSS_RDY);
+                    
+                    // Si el RTC no está sicronizado, se actualiza FyH
+                    if(!(_GetHubStatus() & HUB_STS_DTIME_SYNCRO_OK))
+                    {
+                        rtc_soft_t rtc;
+                        rtc.day   = BCD_TO_DEC((_GetGNSS()->date >> 16) & 0xFF);
+                        rtc.month = BCD_TO_DEC((_GetGNSS()->date >> 8)  & 0xFF);
+                        rtc.year  = BCD_TO_DEC(_GetGNSS()->date & 0xFF) + 2000;
+
+                        rtc.hour  = BCD_TO_DEC((_GetGNSS()->time >> 16) & 0xFF);
+                        rtc.min   = BCD_TO_DEC((_GetGNSS()->time >> 8)  & 0xFF);
+                        rtc.sec   = BCD_TO_DEC(_GetGNSS()->time & 0xFF);
+                        
+                        // Si poseemos fecha valida
+                        if(rtc.day && rtc.month && rtc.year)
+                        {
+                                
+                            printf("GNSS RTC: %02u/%02u/%04u %02u:%02u:%02u\r\n",
+                            rtc.day,
+                            rtc.month,
+                            rtc.year,
+                            rtc.hour,
+                            rtc.min,
+                            rtc.sec);
+                                                    
+                            int64_t tstamp = RTC_ToTimestamp(&rtc); 
+                            rtc_soft_t newrtc;
+                            
+                            printf("[_ProcSrvCom] RTC_ToTimestamp...%llu\n", (unsigned long long)tstamp);
+                            tstamp += TIMEZONE_ARGENTINA_SECONDS;
+                            printf("[_ProcSrvCom] UTC -3...%llu\n", (unsigned long long)tstamp);
+                            Timestamp_ToRTC((uint64_t)tstamp, &newrtc);
+                            
+                            printf("ROUNDTRIP  : %02u/%02u/%04u %02u:%02u:%02u\r\n",
+                                newrtc.day,
+                                newrtc.month,
+                                newrtc.year,
+                                newrtc.hour,
+                                newrtc.min,
+                                newrtc.sec);
+
+                            _SetsRTC(newrtc);
+                            
+                            // Date and time sincronized by GNSS
+                            _SetHubStatus(HUB_STS_DTIME_SYNCRO_OK);
+                        }
+                    }
+                }
 #ifdef _USE_DEBUG_GNSS
                 printf("GNSS res=%d\n", result);
                 GNSS_DebugPrint(&GNSS_Position);                

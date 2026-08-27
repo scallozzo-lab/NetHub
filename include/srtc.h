@@ -3,6 +3,12 @@
 
 #include "main.h"
 
+/*-----------------------------------------------------------*/
+#define TIMEZONE_ARGENTINA_SECONDS   (-3L * 60L * 60L)
+//#define TIMEZONE_ARGENTINA_SECONDS 10800ULL
+/*-----------------------------------------------------------*/
+
+#define BCD_TO_DEC(x)    ((((x) >> 4) * 10) + ((x) & 0x0F))
 
 typedef struct {
     uint8_t sec;    // 0-59
@@ -31,5 +37,7 @@ void RTC_Soft_Tick(rtc_soft_t *rtc);
 uint8_t RTC_GetWeekDay(const rtc_soft_t *rtc);
 uint32_t RTC_Pack(const rtc_soft_t *rtc);
 void RTC_Unpack(uint32_t v, rtc_soft_t *rtc);
+void Timestamp_ToRTC(uint64_t timestamp, rtc_soft_t *rtc);
+uint64_t RTC_ToTimestamp(const rtc_soft_t *rtc);
 
 #endif

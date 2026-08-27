@@ -72,7 +72,7 @@ typedef enum
 typedef enum
 {
     HUB_STS_GNSS_RDY            = BIT0,
-    HUB_STS_res1                = BIT1,
+    HUB_STS_DTIME_SYNCRO_OK     = BIT1,
     HUB_STS_res2                = BIT2,
     HUB_STS_res3                = BIT3,
     HUB_STS_res4                = BIT4,
