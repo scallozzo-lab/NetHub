@@ -8,7 +8,7 @@
 
 //------------------------------------------------- LT - Config -----------------------------------------------------
 #define _LTPROTO_TIMERALIVE         300
-#define _LTPROTO_TIMEOUTSRV         1000
+#define _LTPROTO_TIMEOUTSRV         3000
 #define _LTX_TIMESLOT               130//(90)
 #define _MAXFRAMEFWUPDATE           128 //1024        // Valor máximo de frame de fw update (el servicio puede elegir uno menor, siendo este el tope)
 //------------------------------------------------- LT --------------------------------------------------------------

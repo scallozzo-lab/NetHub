@@ -10,16 +10,19 @@
  # [MODEM] Corregir que pueda detectar desconexión en standby y volver a iniciar.                                   [Corregido]
  # [MODEM] Verificar: Si no hay servidor, o el modem no conecta debe seguir usando GNSS 
  # [SRTC]  Verificar: Conversión UTC a TimeStamp tiene un desvio de unos 6 minutos
- # [LCD] Mejorar que solo imprima cuando haya cambios.
+ # [LCD] Mejorar que solo imprima cuando haya cambios.                                                              [Corregido]
  # [LCD] Implementar gráficos y segundo display.
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
+ 
  
  [27/08/2026] SCALLOZZO
     # Se agrega manejo de TX USART1 por DMA.
     # Se mejora el manejo del RTC desde interrupción.
     # Se agrega flag de timeout de comunicación entre Hub<->Srv  
- 
+    # Se mejora SH1106_Printf para que imprima solo si existen cambios.
+    # Se agrega led monitor: Indica sin conexión parpadeo lento, conexión 1 flash, conexión + gps 2 flashes. 
+
  [26/08/2026] SCALLOZZO
     # Se agrega RTC desde GPS con calculo de fecha y hora local  
  
@@ -324,7 +327,7 @@ void _1SecFunctions(void)
     //RTC_Soft_Tick(_GetRtcPtr());
     rtc_soft_t *rtc = _GetRtcPtr();
     
-    #ifdef _USE_DEBUG_SRTC
+#ifdef _USE_DEBUG_SRTC
     // DEBUG: imprimir fecha y hora
     printf("FyH: %02d/%02d/%04d %02d:%02d:%02d\r\n",
            rtc->day,
@@ -334,7 +337,6 @@ void _1SecFunctions(void)
            rtc->min,
            rtc->sec);
 #endif
-
     
     TimeRunning++;
 }
@@ -345,31 +347,63 @@ void _1msFunctions(void)
    _ProcLTSlv(); 
 }
 
+void _ProcMonitorLed(void)
+{
+    static uint8_t xDiv100ms = 0;
+    static uint8_t xBlink = 0;
+    static bool bFlag = false;
+   
+    uint8_t sts = 255;      // default todo el ciclo parapadeando
+    uint8_t blinkfreq = 32; // default frecuencia baja
+
+    // Si la comunicación está sincronizada, parpadeo rápido
+    if(_GetHubStatus() & HUB_STS_COM_SYNCHRONIZED)
+    {
+        blinkfreq = 16;
+        
+        // Si no hay GPS un flash
+        if(!(_GetHubStatus() & HUB_STS_GNSS_RDY))
+            sts = 1;
+        // Sino si hay GPS dos flashes
+        else 
+            sts = 3;
+    }
+   
+    if(xDiv100ms++ & blinkfreq)
+    {
+        if(bFlag == false)
+        {
+           xBlink++;
+           bFlag = true; 
+        }
+        if(xBlink >= 8) xBlink = 0;
+    }
+    else 
+        bFlag = false;
+    
+    if(bFlag == false) SetLedMonitorGreen(0);
+    else if(((1<<xBlink) & sts))
+        SetLedMonitorGreen(1);
+}
+
+
 void _10msFunctions(void)
 {
-    static uint8_t xDiv = 0, xDiv100ms = 0;
-  
+    static uint8_t xDiv = 0;
+   
     _ProcLTProto();
     _FwUpdateCtrl();
 
 #ifdef _USE_DMX512    
     _ProcLEDEffect();
 #endif
-
-    if(xDiv100ms++ >= 50)
-    {
-        LedMonitor();
-        LedMonitorGreen();
-        xDiv100ms = 0;
-    }
+    
+    _ProcMonitorLed();
 
     if(xDiv++ >= 95)
     {
         _1SecFunctions();
         xDiv = 0;
-        
-        //_test_eeram();
-        //test_adc();
     }
 }
 

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+
 static uint8_t _i2caddr = SH1106_I2C_ADDR;
 
 void _SelLCD1(void)
@@ -469,10 +470,11 @@ void SH1106_DrawBitmap(uint8_t x, uint8_t page,
     }
 }
 
+/*
 void SH1106_Printf(uint8_t font, uint8_t x, uint8_t page, const char *fmt, ...)
 {
     char buffer[64];
-
+   
     va_list args;
     va_start(args, fmt);
     vsnprintf(buffer, sizeof(buffer), fmt, args);
@@ -488,4 +490,64 @@ void SH1106_Printf(uint8_t font, uint8_t x, uint8_t page, const char *fmt, ...)
         SH1106_print8x8(x, page, buffer);
         break;    
     }
+}
+*/
+
+
+#define SH1106_MAX_X_FIELDS    8
+#define SH1106_PRINT_BUFFER    64
+
+void SH1106_Printf(uint8_t font, uint8_t x, uint8_t page, const char *fmt, ...)
+{
+    char buffer[SH1106_PRINT_BUFFER];
+
+    static char lastBuffer[SH1106_MAX_X_FIELDS][SH1106_PRINT_BUFFER];
+    static uint8_t lastFont[SH1106_MAX_X_FIELDS];
+    static uint8_t lastPage[SH1106_MAX_X_FIELDS];
+    static uint8_t initialized[SH1106_MAX_X_FIELDS] = {0};
+
+    va_list args;
+
+    if (x >= SH1106_MAX_X_FIELDS)
+        return;
+
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+
+    /*
+     * Analizamos solamente si cambió algo
+     * dentro de la posición x correspondiente.
+     */
+    if (initialized[x] &&
+        lastFont[x] == font &&
+        lastPage[x] == page &&
+        strcmp(lastBuffer[x], buffer) == 0)
+    {
+        return;
+    }
+
+    switch(font)
+    {
+        case _FONT_5X7:
+            SH1106_print(x, page, buffer);
+            break;
+
+        case _FONT_8X8:
+            SH1106_print8x8(x, page, buffer);
+            break;
+
+        default:
+            return;
+    }
+
+    /*
+     * Guardamos el estado de esta posición.
+     */
+    strncpy(lastBuffer[x], buffer, SH1106_PRINT_BUFFER - 1);
+    lastBuffer[x][SH1106_PRINT_BUFFER - 1] = '\0';
+
+    lastFont[x] = font;
+    lastPage[x] = page;
+    initialized[x] = 1;
 }
