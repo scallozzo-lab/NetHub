@@ -4,6 +4,13 @@
 #define DMX_TX_LOW()     (GPIOB->BSRR = GPIO_BSRR_BR15)      //br15   
 
 
+static inline void DMX_DWT_Init(void)
+{
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
 /*
 void xDelay(uint32_t us)
 {
@@ -34,8 +41,13 @@ void DMX_GPIO_Init(void)
 
     // Estado idle de DMX = HIGH
     DMX_TX_HIGH();
+
+
+ DMX_DWT_Init();
+
 }
 
+/*
 static 
 inline
 void DMX_SendByte(uint8_t data)
@@ -65,6 +77,99 @@ void DMX_SendByte(uint8_t data)
     DMX_TX_HIGH();
     xDelay(_DMX_PULSE_4US);
 }
+
+*/
+
+/*
+static inline void DMX_SendByte(uint8_t data)
+{
+    uint32_t next = DWT->CYCCNT;
+
+    // START BIT
+    DMX_TX_LOW();
+    next += 288;
+
+    // DATA bits
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        while ((int32_t)(DWT->CYCCNT - next) < 0)
+        {
+        }
+
+        if (data & (1U << i))
+            DMX_TX_HIGH();
+        else
+            DMX_TX_LOW();
+
+        next += 288;
+    }
+
+    // STOP 1
+    while ((int32_t)(DWT->CYCCNT - next) < 0)
+    {
+    }
+
+    DMX_TX_HIGH();
+    next += 288;
+
+    // STOP 2
+    while ((int32_t)(DWT->CYCCNT - next) < 0)
+    {
+    }
+
+    DMX_TX_HIGH();
+
+    while ((int32_t)(DWT->CYCCNT - (next + 288)) < 0)
+    {
+    }
+}
+*/
+
+
+
+static inline void DMX_SendByte(uint8_t data)
+{
+    uint32_t next = DWT->CYCCNT;
+
+    // START
+    DMX_TX_LOW();
+    next += 288;
+
+    // DATA
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        while ((int32_t)(DWT->CYCCNT - next) < 0)
+        {
+        }
+
+        if (data & (1U << i))
+            DMX_TX_HIGH();
+        else
+            DMX_TX_LOW();
+
+        next += 288;
+    }
+
+    // STOP 1
+    while ((int32_t)(DWT->CYCCNT - next) < 0)
+    {
+    }
+
+    DMX_TX_HIGH();
+    next += 288;
+
+    // STOP 2
+    while ((int32_t)(DWT->CYCCNT - next) < 0)
+    {
+    }
+
+    DMX_TX_HIGH();
+
+    while ((int32_t)(DWT->CYCCNT - (next + 288)) < 0)
+    {
+    }
+}
+
 
 void DMX_SendFrame(uint8_t scode, uint8_t *data, uint16_t length)
 {
