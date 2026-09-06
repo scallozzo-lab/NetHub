@@ -697,6 +697,8 @@ void DelayUs(uint32_t us)
     );
 }
 
+
+
 uint8_t _GetBit(const uint8_t data[13], uint16_t bit_index)
 {
     if (bit_index >= 13 * 8) {

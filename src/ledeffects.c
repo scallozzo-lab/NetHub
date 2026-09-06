@@ -3,7 +3,7 @@
 #include "_dmx512.h"
 #include <string.h>
 
-static uint8_t dmx[3], dmxold[3];
+static uint8_t dmx[4] = {0}, dmxold[4] = {0};
 
 typedef enum
 {
@@ -14,7 +14,7 @@ typedef enum
 } LED_EFFECT_t;
 
 
-static LED_EFFECT_t ledEffect = LED_EFFECT_FADE_IN_OUT;//LED_EFFECT_OFF;
+static LED_EFFECT_t ledEffect = LED_EFFECT_FADE_IN_OUT;
 
 static uint16_t effectCounter = 0;
 static uint16_t effectDuration = 100; // 100 x 10ms = 1 segundo
@@ -28,9 +28,10 @@ void _ProcLEDEffect(void)
     {
         case LED_EFFECT_OFF:
 
-            dmx[0] = 0;
-            dmx[1] = 0;
-            dmx[2] = 0;
+            dmx[0] = 0xff;
+            dmx[1] = 0xff;
+            dmx[2] = 0xff;
+            dmx[3] = 0xff;
 
             break;
 
@@ -89,14 +90,15 @@ void _ProcLEDEffect(void)
         dmx[0] = value;
         dmx[1] = value;
         dmx[2] = value;
+        dmx[3] = value;
 
         break;
     }
  
     // Si el contenido cambió lo envía a la controladora
-    if(memcmp(dmx, dmxold, 3))
+    //if(memcmp(dmx, dmxold, 3))
     {
         memcpy(dmxold, dmx, sizeof(dmxold));
-        DMX_SendFrame(dmx, sizeof(dmx));
+        DMX_SendFrame(0, dmx, sizeof(dmx));
     }
 }

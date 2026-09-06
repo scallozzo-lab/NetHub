@@ -1,7 +1,28 @@
 #include "_dmx512.h"
 
-#define DMX_TX_HIGH()    (GPIOB->BSRR = GPIO_BSRR_BS15)
-#define DMX_TX_LOW()     (GPIOB->BSRR = GPIO_BSRR_BR15)
+#define DMX_TX_HIGH()    (GPIOB->BSRR = GPIO_BSRR_BS15)      //bs15   
+#define DMX_TX_LOW()     (GPIOB->BSRR = GPIO_BSRR_BR15)      //br15   
+
+
+/*
+void xDelay(uint32_t us)
+{
+    uint32_t start = SysTick->VAL;
+    uint32_t ticks = us * 7200;//(get_sysclk_freq / 1000000UL);
+
+    while ((int32_t)(start - SysTick->VAL) < ticks)
+    {
+    }
+}
+    */
+
+void xDelay(uint32_t us)
+{
+    for (volatile uint32_t x = 0; x < us; x++)
+    {
+        __asm volatile ("nop");
+    }
+}
 
 void DMX_GPIO_Init(void)
 {
@@ -23,7 +44,7 @@ void DMX_SendByte(uint8_t data)
 
     // START BIT
     DMX_TX_LOW();
-    DelayUs(_DMX_PULSE_4US);
+    xDelay(_DMX_PULSE_4US);
 
     // DATA - LSB first
     for (i = 0; i < 8; i++)
@@ -33,19 +54,19 @@ void DMX_SendByte(uint8_t data)
         else
             DMX_TX_LOW();
 
-        DelayUs(_DMX_PULSE_4US);
+        xDelay(_DMX_PULSE_4US);
     }
 
     // STOP BIT 1
     DMX_TX_HIGH();
-    DelayUs(_DMX_PULSE_4US);
+    xDelay(_DMX_PULSE_4US);
 
     // STOP BIT 2
     DMX_TX_HIGH();
-    DelayUs(_DMX_PULSE_4US);
+    xDelay(_DMX_PULSE_4US);
 }
 
-void DMX_SendFrame(uint8_t *data, uint16_t length)
+void DMX_SendFrame(uint8_t scode, uint8_t *data, uint16_t length)
 {
     uint16_t i;
 
@@ -57,22 +78,22 @@ void DMX_SendFrame(uint8_t *data, uint16_t length)
 
     /*
      * BREAK
-     * Mínimo DMX: 88 us
+     * Mínimo DMX: 88 usDelayUs
      */
     DMX_TX_LOW();
-    DelayUs(_DMX_BREAK_100US);
+    xDelay(_DMX_BREAK_100US);
 
-    /*
+    /*DelayUs
      * MAB
      * Mínimo: 8 us
      */
     DMX_TX_HIGH();
-    DelayUs(_DMX_MAB_12US);    
+    xDelay(_DMX_MAB_12US);    
     /*
      * START CODE
      * 0x00 = DMX normal
      */
-    DMX_SendByte(0x00);
+    DMX_SendByte(scode);
 
     /*
      * CHANNEL DATA
@@ -88,4 +109,5 @@ void DMX_SendFrame(uint8_t *data, uint16_t length)
     DMX_TX_HIGH();
     
     __enable_irq();
+
 }

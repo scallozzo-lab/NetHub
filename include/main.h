@@ -45,7 +45,7 @@
 #ifdef _NETHUBMODE
     #define _UART_DEBUG _USART_2       
     #define _USE_USART1_MODEM
-    //#define _USE_SYSTICK
+    #define _USE_SYSTICK
     #define _USE_SSPI               // usar softspi debido a que los tracks mosi y miso están invertidos en el pcb
     #define _USE_SI2C
     #define _USE_SH1106

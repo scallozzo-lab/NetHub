@@ -3,6 +3,7 @@
 static volatile uint32_t Ticks1us = 0;
 
 
+/*
 void SysTick_Init(uint32_t sysclk)
 {
     // sysclk_hz = frecuencia del CPU en Hz (por ejemplo 72,000,000)
@@ -10,9 +11,24 @@ void SysTick_Init(uint32_t sysclk)
     SysTick->LOAD = 7200;//ticks_per_us - 10;   // 10 µs exacto
     SysTick->VAL = 0;
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk |   // CPU clock
-                    SysTick_CTRL_TICKINT_Msk   |   // habilitar interrupción
+                    //SysTick_CTRL_TICKINT_Msk   |   // habilitar interrupción
                     SysTick_CTRL_ENABLE_Msk;       // habilitar SysTick
 }
+*/
+
+void SysTick_Init(uint32_t sysclk)
+{
+    SysTick->LOAD = 7200;//(sysclk / 1000000UL) - 1;
+    SysTick->VAL  = 0;
+
+    SysTick->CTRL =
+        SysTick_CTRL_CLKSOURCE_Msk |
+        SysTick_CTRL_ENABLE_Msk;
+}
+
+
+
+
 
 uint32_t _GetTickSys(void)
 {
@@ -24,3 +40,8 @@ void SysTick_Handler(void)
     // Aquí pondrás
     Ticks1us++;
 }
+    
+
+
+
+
