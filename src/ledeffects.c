@@ -4,6 +4,7 @@
 #include <string.h>
 
 static uint8_t dmx[4] = {0}, dmxold[4] = {0};
+static uint8_t MdxSeq = 0;
 
 typedef enum
 {
@@ -20,6 +21,16 @@ static uint16_t effectCounter = 0;
 static uint16_t effectDuration = 100; // 100 x 10ms = 1 segundo
 
 
+uint8_t _GetMDXSeq(void)
+{
+    return MdxSeq;
+}
+
+void _SetMDXSeq(uint8_t s)
+{
+    MdxSeq = s;
+}
+
 void _ProcLEDEffect(void)
 {
     uint8_t value;
@@ -28,10 +39,10 @@ void _ProcLEDEffect(void)
     {
         case LED_EFFECT_OFF:
 
-            dmx[0] = 0xff;
-            dmx[1] = 0xff;
-            dmx[2] = 0xff;
-            dmx[3] = 0xff;
+            dmx[0] = 0x05;
+            dmx[1] = 0x02;
+            dmx[2] = 0x02;
+            dmx[3] = 0x00;
 
             break;
 
@@ -96,7 +107,7 @@ void _ProcLEDEffect(void)
     }
  
     // Si el contenido cambió lo envía a la controladora
-    //if(memcmp(dmx, dmxold, 3))
+    if(memcmp(dmx, dmxold, 3))
     {
         memcpy(dmxold, dmx, sizeof(dmxold));
         DMX_SendFrame(0, dmx, sizeof(dmx));

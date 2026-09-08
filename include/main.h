@@ -16,13 +16,15 @@
 //#define _USE_TX_STATUS_CMD_EMPTYDEV     // Transmite el comando de status de dispositivos aunque esté vacio
 //#define _USE_DUMMY_TEST_SRTC              // Pruebas de conversión Timestamp a UTC
 
-#define _USE_DMX512                      // Agrega manejo del protocolo para leds 
+#define _USE_DMX512
+#define _MAXCALENDARLST         5
+                      // Agrega manejo del protocolo para leds 
 //#define _USE_DUMMY_TEST_DMX512
 #define _USE_DEFAULT_NVRAMEFFECTS       // Crea por unica vez una lista de prueba de efectos
 /*--------------------------------------------------------------*/
 
 //#define _USE_DEBUG_SRVCOM
-//#define _USE_DEBUG_TXRX
+#define _USE_DEBUG_TXRX
 //#define _USE_DEBUG_GNSS
 //#define _USE_DEBUG_TX_SRVCOM            
    

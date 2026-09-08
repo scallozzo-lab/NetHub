@@ -92,6 +92,10 @@ void _InitLTProtocol(void)
     //memset(RxLTDatast2, 0, sizeof(RxLTDatast2));
     memset(RxLTData, 0, sizeof(RxLTData));
     
+#ifdef _USE_DMX512
+    _SetHubStatus(HUB_STS_DMX_ENABLED);
+#endif
+
     if(_GetHubId())
         memcpy(LTProtocol.HubId, _GetHubId(), sizeof(LTProtocol.HubId));
 
@@ -113,6 +117,8 @@ uint8_t *_GetHubID(void)
 
 void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
 {   
+    bool dmxenabled = false;
+
     for(int idx = 0; idx < _CANTMAXSLOTS; idx++)
     {
         if(len[idx])
@@ -129,6 +135,7 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                     {
                         LTProtocol.Srvtimerrx = _LTPROTO_TIMEOUTSRV;
                         _SetHubStatus(HUB_STS_COM_SYNCHRONIZED);   
+                        if(RxLTHubStatus->SStatus & SSTATUS_STS_DMX_ENABLE) dmxenabled = true;
 #ifdef _USE_DEBUG_TXRX
                         printf("[_ProcRxLT] Rx Cmd HUBStatus...\n");
                         printf("flag = %02X\n", RxLTHubStatus->flag);
@@ -178,8 +185,8 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                         // Nueva secuencia
                         LTProtocol.seqId++;
                     }
-                    // Si cambió la cantidad de dispositivos habilitados, procesa la nueva lista:
-                    if(LTProtocol.LTDevAttached != RxLTHubStatus->DevAttached || LTProtocol.LTDevDisabled != RxLTHubStatus->DevDisabled)
+                    // Si es NetHub Convencional (DMX NO habilitado) Si cambió la cantidad de dispositivos habilitados, procesa la nueva lista:
+                    if( (LTProtocol.LTDevAttached != RxLTHubStatus->DevAttached || LTProtocol.LTDevDisabled != RxLTHubStatus->DevDisabled) && !dmxenabled)
                     {
                         for(int idx = 0;idx < _CANT_MAX_SLV; idx++)
                         {    
@@ -216,7 +223,6 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
 
 #ifdef _USE_DEBUG_TXRX
                 printf("[_ProcRxLT] Rx Cmd LTFwFrame\n");
-
                 printf(" flag : 0x%02X\n", RxLTFwFrame->flag);
                 printf(" len  : %u\n",   RxLTFwFrame->len);
                 printf(" Cmd  : 0x%02X\n", RxLTFwFrame->Cmd);
@@ -267,6 +273,37 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                 } 
             }
             break;
+
+ #ifdef _USE_DMX512           
+            case LT_CMD_MDX_CFG:
+            {
+                stRxLTMdxCfg *RxLTMdxCfg = (stRxLTMdxCfg *)rxbuff;
+
+                if(LTProtocol.seqId == RxLTMdxCfg->Seq)
+                {    
+#ifdef _USE_DEBUG_TXRX
+                    printf("[_ProcRxLT] Rx Cmd MDXCfg...\n");
+
+                    printf("flag = %02X\n", RxLTMdxCfg->flag);
+                    printf("len = (%d)\n", RxLTMdxCfg->len);
+                    printf("cmd = %02X\n", RxLTMdxCfg->Cmd);
+                    printf("Seq = %08X\n", RxLTMdxCfg->Seq);
+
+                    printf("CalendarList:\n");
+
+                    for(int i = 0; i < _MAXCALENDARLST; i++)
+                    {
+                        printf("  [%d] ...\n", i);
+                    }
+
+                    printf("Crc = %04X\n", RxLTMdxCfg->Crc);
+#endif
+                    // Actualiza la secuencia recibida
+                    _SetMDXSeq(RxLTMdxCfg->MdxSeq);
+                }
+            }
+            break;
+#endif            
 
                 default:
                 printf("[_ProcRxLT] Rx Cmd Desconocido %02X\n", rxbuff[3]);
@@ -386,6 +423,11 @@ void _ProcLTProto(void)
                 TxLTHubStatus.longitude_e7 = _GetGNSS()->longitude_e7;
                 memcpy(&TxLTHubStatus.rtc, _GetRtcPtr(), sizeof(TxLTHubStatus.rtc));
                 
+#ifdef _USE_DMX512
+                TxLTHubStatus.dmxseq = _GetMDXSeq();
+#else
+                TxLTHubStatus.dmxseq = 0;
+#endif
                 TxLTHubStatus.FwVersion = _GetFirmwareVer();
                 _TxServer(&TxLTHubStatus, sizeof(TxLTHubStatus));
                 

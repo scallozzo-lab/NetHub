@@ -5,6 +5,9 @@
 //#include "_IOfncs.h"
 #include "srvcom.h"
 #include "srtc.h"
+#ifdef _USE_DMX512
+    #include "ledeffects.h"
+#endif
 
 //------------------------------------------------- LT - Config -----------------------------------------------------
 #define _LTPROTO_TIMERALIVE         300
@@ -23,6 +26,7 @@ typedef enum
     LT_CMD_HUB_STATUS   = 0x20,
     LT_CMD_STATUS       = 0x21,
     LT_CMD_FW_FRAME     = 0x22,
+    LT_CMD_MDX_CFG      = 0x23,         // Llega como respuesta de hubstatus cuando hay nueva configuración
     //----------LT Server side Cmds------------//
     LT_CMD_SERVERSIDE   = 0x40,  
     //----------RC Server side-----------------//
@@ -67,7 +71,7 @@ typedef enum
     SSTATUS_STS_res3            = BIT3,
     SSTATUS_STS_res4            = BIT4,
     SSTATUS_STS_res5            = BIT5,
-    SSTATUS_STS_res6            = BIT6,
+    SSTATUS_STS_DMX_ENABLE      = BIT6,
     SSTATUS_STS_FWUPDATE_ENABLE = BIT7    
 }esstatus;
 
@@ -151,7 +155,8 @@ typedef struct __attribute__((packed))
     int32_t latitude_e7;
     int32_t longitude_e7;
     rtc_soft_t rtc;
-    
+    uint8_t dmxseq;
+
     uint16_t FwVersion;
     uint16_t Crc;
 }stTxLTHubStatus;
@@ -177,6 +182,18 @@ typedef struct __attribute__((packed))
     
     uint16_t Crc;
 }stRxLTHubStatus;
+
+// Estructura de respuesta para LT_CMD_MDX_CFG
+typedef struct __attribute__((packed))
+{
+    uint8_t flag;
+    uint16_t len;
+    uint8_t Cmd;
+    uint32_t Seq;
+    uint8_t MdxSeq;
+    stCalendarEvent CalendarList[_MAXCALENDARLST];
+    uint16_t Crc;
+}stRxLTMdxCfg;
 
 typedef struct __attribute__((packed))
 {
