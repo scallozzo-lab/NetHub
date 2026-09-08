@@ -5,21 +5,30 @@
 
 static uint8_t dmx[4] = {0}, dmxold[4] = {0};
 static uint8_t MdxSeq = 0;
+static stCurrentMode _RGBCurrentMode = {0};
+
+
 
 typedef enum
 {
     LED_EFFECT_OFF = 0,
+    LED_EFFECT_FIXED,
     LED_EFFECT_FADE_IN,
     LED_EFFECT_FADE_OUT,
     LED_EFFECT_FADE_IN_OUT
 } LED_EFFECT_t;
 
 
-static LED_EFFECT_t ledEffect = LED_EFFECT_FADE_IN_OUT;
+static LED_EFFECT_t ledEffect = LED_EFFECT_FIXED;//LED_EFFECT_FADE_IN_OUT;
 
 static uint16_t effectCounter = 0;
 static uint16_t effectDuration = 100; // 100 x 10ms = 1 segundo
 
+
+void _SetRGBCurrentMode(uint8_t *st)
+{
+    memcpy(&_RGBCurrentMode, st, sizeof(_RGBCurrentMode));
+}
 
 uint8_t _GetMDXSeq(void)
 {
@@ -39,12 +48,18 @@ void _ProcLEDEffect(void)
     {
         case LED_EFFECT_OFF:
 
-            dmx[0] = 0x05;
-            dmx[1] = 0x02;
-            dmx[2] = 0x02;
-            dmx[3] = 0x00;
-
+            dmx[0] = 0;
+            dmx[1] = 0;
+            dmx[2] = 0;
+            dmx[3] = 0;
             break;
+
+        case LED_EFFECT_FIXED:
+            dmx[0] = _RGBCurrentMode.rgbg1_r;
+            dmx[1] = _RGBCurrentMode.rgbg1_g;
+            dmx[2] = _RGBCurrentMode.rgbg1_b;
+            dmx[3] = 0;
+        break;
 
 
         case LED_EFFECT_FADE_IN:

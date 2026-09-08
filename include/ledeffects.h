@@ -4,7 +4,7 @@
 #include "main.h"
 
 
-typedef struct
+typedef struct __attribute__((packed))
 {
     uint8_t  enabled;
 
@@ -31,6 +31,27 @@ typedef struct
 
 } stCalendarEvent;
 
+typedef struct __attribute__((packed))
+{
+    bool rgbg1_enable;
+    uint8_t rgbg1_r;
+    uint8_t rgbg1_g;
+    uint8_t rgbg1_b;
+
+    bool rgbg2_enable;
+    uint8_t rgbg2_r;
+    uint8_t rgbg2_g;
+    uint8_t rgbg2_b;
+    
+    bool rgbg3_enable;
+    uint8_t rgbg3_r;
+    uint8_t rgbg3_g;
+    uint8_t rgbg3_b;
+    
+    uint8_t mode;
+}stCurrentMode;
+
+void _SetRGBCurrentMode(uint8_t *st);
 uint8_t _GetMDXSeq(void);
 void _SetMDXSeq(uint8_t s);
 

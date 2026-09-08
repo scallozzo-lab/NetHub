@@ -205,6 +205,14 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                     
                         // Se recibió la configuración de los terminales.
                         LTProtocol.status |= LT_STS_CONFIG_SLV_OK;
+                    }
+                    else if(dmxenabled)
+                    {
+                        // Si es request 1 (DMX data en modo manual)
+                        if(RxLTHubStatus->SRequest == 1)
+                        {
+                            _SetRGBCurrentMode(&RxLTHubStatus->DevbitList[1]);    
+                        }    
                     } 
                 }
                 break;
@@ -281,7 +289,9 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
 
                 if(LTProtocol.seqId == RxLTMdxCfg->Seq)
                 {    
+
 #ifdef _USE_DEBUG_TXRX
+
                     printf("[_ProcRxLT] Rx Cmd MDXCfg...\n");
 
                     printf("flag = %02X\n", RxLTMdxCfg->flag);
@@ -293,10 +303,48 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
 
                     for(int i = 0; i < _MAXCALENDARLST; i++)
                     {
-                        printf("  [%d] ...\n", i);
+                        printf("Calendar[%d]\n", i);
+
+                        printf("  enabled   = (%d)\n",
+                            RxLTMdxCfg->CalendarList[i].enabled);
+
+                        printf("  start     = %02d:%02d\n",
+                            RxLTMdxCfg->CalendarList[i].start_hour,
+                            RxLTMdxCfg->CalendarList[i].start_minute);
+
+                        printf("  end       = %02d:%02d\n",
+                            RxLTMdxCfg->CalendarList[i].end_hour,
+                            RxLTMdxCfg->CalendarList[i].end_minute);
+
+                        printf("  days_mask = %02X\n",
+                            RxLTMdxCfg->CalendarList[i].days_mask);
+
+                        printf("  action    = (%d)\n",
+                            RxLTMdxCfg->CalendarList[i].action);
+
+                        printf("  RGB G1    = (%d, %d, %d)\n",
+                            RxLTMdxCfg->CalendarList[i].r_g1,
+                            RxLTMdxCfg->CalendarList[i].g_g1,
+                            RxLTMdxCfg->CalendarList[i].b_g1);
+
+                        printf("  RGB G2    = (%d, %d, %d)\n",
+                            RxLTMdxCfg->CalendarList[i].r_g2,
+                            RxLTMdxCfg->CalendarList[i].g_g2,
+                            RxLTMdxCfg->CalendarList[i].b_g2);
+
+                        printf("  RGB G3    = (%d, %d, %d)\n",
+                            RxLTMdxCfg->CalendarList[i].r_g3,
+                            RxLTMdxCfg->CalendarList[i].g_g3,
+                            RxLTMdxCfg->CalendarList[i].b_g3);
+
+                        printf("  dimming   = (%d)\n",
+                            RxLTMdxCfg->CalendarList[i].dimming);
+
+                        printf("\n");
                     }
 
                     printf("Crc = %04X\n", RxLTMdxCfg->Crc);
+
 #endif
                     // Actualiza la secuencia recibida
                     _SetMDXSeq(RxLTMdxCfg->MdxSeq);
