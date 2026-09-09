@@ -15,6 +15,10 @@
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
  
+ [08/09/2026] SCALLOZZO
+ 
+    # Se agrega _CANTMAX_RETRY_NOREG para borrar y rearrancar registro en la red. Esto sirve en los casos donde le modem se queda
+      en CReg 0,0 todo el tiempo. 
  
  [27/08/2026] SCALLOZZO
     # Se agrega manejo de TX USART1 por DMA.

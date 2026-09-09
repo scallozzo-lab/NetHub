@@ -77,6 +77,13 @@ typedef enum
 
 typedef enum
 {
+    SS_SREQUEST_NONE   = 0,
+    SS_SREQUEST_RGB_MANUAL,
+}esrequest;
+
+
+typedef enum
+{
     HUB_STS_GNSS_RDY            = BIT0,
     HUB_STS_DTIME_SYNCRO_OK     = BIT1,
     HUB_STS_res2                = BIT2,

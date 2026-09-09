@@ -6,8 +6,7 @@
 static uint8_t dmx[4] = {0}, dmxold[4] = {0};
 static uint8_t MdxSeq = 0;
 static stCurrentMode _RGBCurrentMode = {0};
-
-
+static stCalendarEvent CalendarEvent[_MAXCALENDARLST] = {0};
 
 typedef enum
 {
@@ -19,15 +18,28 @@ typedef enum
 } LED_EFFECT_t;
 
 
-static LED_EFFECT_t ledEffect = LED_EFFECT_FIXED;//LED_EFFECT_FADE_IN_OUT;
+static LED_EFFECT_t ledEffect = LED_EFFECT_OFF;//LED_EFFECT_FIXED;//LED_EFFECT_FADE_IN_OUT;
 
 static uint16_t effectCounter = 0;
 static uint16_t effectDuration = 100; // 100 x 10ms = 1 segundo
 
+void _SetCalendarEvent(stCalendarEvent *pst)
+{
+    if(pst)
+        memcpy(CalendarEvent, pst, sizeof(CalendarEvent));
+}
 
 void _SetRGBCurrentMode(uint8_t *st)
 {
     memcpy(&_RGBCurrentMode, st, sizeof(_RGBCurrentMode));
+    if(_RGBCurrentMode.mode == _RGB_MODE_OFF) ledEffect = LED_EFFECT_OFF; 
+    // Forzado de modo manual
+    else ledEffect = LED_EFFECT_FIXED;
+}
+
+void _SetRGBMode(uint8_t m)
+{
+    _RGBCurrentMode.mode = m;
 }
 
 uint8_t _GetMDXSeq(void)

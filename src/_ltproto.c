@@ -209,10 +209,11 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                     else if(dmxenabled)
                     {
                         // Si es request 1 (DMX data en modo manual)
-                        if(RxLTHubStatus->SRequest == 1)
+                        if(RxLTHubStatus->SRequest == SS_SREQUEST_RGB_MANUAL)
                         {
-                            _SetRGBCurrentMode(&RxLTHubStatus->DevbitList[1]);    
-                        }    
+                            _SetRGBCurrentMode(&RxLTHubStatus->DevbitList[0]);    
+                        }
+                        else _SetRGBMode(_RGB_MODE_AUTO);    
                     } 
                 }
                 break;
@@ -346,13 +347,14 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                     printf("Crc = %04X\n", RxLTMdxCfg->Crc);
 
 #endif
+                    // Refresca la lista de calendario
+                    _SetCalendarEvent(RxLTMdxCfg->CalendarList);
                     // Actualiza la secuencia recibida
                     _SetMDXSeq(RxLTMdxCfg->MdxSeq);
                 }
             }
             break;
 #endif            
-
                 default:
                 printf("[_ProcRxLT] Rx Cmd Desconocido %02X\n", rxbuff[3]);
             } 

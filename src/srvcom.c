@@ -397,6 +397,8 @@ void _ProcSrvCom(void)
     uint8_t *prxcmd_data = 0, *prx_pos = 0;
     uint16_t rxdatalen = 0, rxlen = 0;
     static gralrx = 0;
+    static uint8_t xregretry = 0;
+
 
 #ifdef _USE_DEBUG_TXRX
     debug_timer++;
@@ -564,6 +566,7 @@ void _ProcSrvCom(void)
         {
             SrvCom.status &= ~SRVCOM_STS_RXRDY;     
             timerrx = 1;
+            xregretry = 0;
             SrvCom.stage++;
         }        
         else if(--rxretry == 0) _TxATCom(_AT_SETAPN);
@@ -588,11 +591,27 @@ void _ProcSrvCom(void)
                 printf("MODEM RESTART (_CANTMAX_CONN_RETRY)\n");
                 gralrx = 0;
                 _InitSrvCom(0);
-            }
+            }    
         }        
         else if(--timerrx == 0) 
         {
-            timerrx = _TIMEPOLLINGCONN;
+            timerrx = _TIMEPOLLINGCONN;   
+       
+            xregretry++;
+            
+            // Si llegó cantidad máxima dispara desregistrar la red
+            if(xregretry == _CANTMAX_RETRY_NOREG)
+            {    
+                _TxATCom("AT+COPS=2");
+                break;
+            }
+            // En siguiente paso volver a búsqueda automática de red
+            else if(xregretry == (_CANTMAX_RETRY_NOREG + 1))
+            {
+                _TxATCom("AT+COPS=0");
+                xregretry = 0;
+                break;
+            }
             _TxATCom(_AT_CREG);
         }
         break;
