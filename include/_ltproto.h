@@ -198,7 +198,7 @@ typedef struct __attribute__((packed))
     uint8_t Cmd;
     uint32_t Seq;
     uint8_t MdxSeq;
-    stCalendarEvent CalendarList[_MAXCALENDARLST];
+    stCalendarEvent CalendarList[_MAXEFFECTEVENTS];
     uint16_t Crc;
 }stRxLTMdxCfg;
 

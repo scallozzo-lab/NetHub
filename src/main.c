@@ -341,7 +341,11 @@ void _1SecFunctions(void)
            rtc->min,
            rtc->sec);
 #endif
-    
+
+#ifdef _USE_DMX512
+    _ProcModeAuto(rtc);
+#endif
+
     TimeRunning++;
 }
    
@@ -557,18 +561,25 @@ Reinit:
 
             for(int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
             {
-                Effects.EffectEvent[idx].enabled = true;
-                Effects.EffectEvent[idx].weekday = RTC_WEEKDAY_WEDNESDAY;
-                Effects.EffectEvent[idx].day = 0; // no es para un dia especifico
-                Effects.EffectEvent[idx].month = 0; // no se especifica (usa weekday)
-                Effects.EffectEvent[idx].hour = 12;
-                Effects.EffectEvent[idx].minute = 30;
-                Effects.EffectEvent[idx].second = 0;
+                Effects.CalendarEvent[idx].enabled = true;
+                Effects.CalendarEvent[idx].start_hour = 12;
+                Effects.CalendarEvent[idx].start_minute = 30;
+                Effects.CalendarEvent[idx].end_hour = 13;
+                Effects.CalendarEvent[idx].end_minute = 00;
+                Effects.CalendarEvent[idx].days_mask = 0x7f;
+                Effects.CalendarEvent[idx].action = 0;
                 
-                Effects.EffectEvent[idx].effect = 123;
-                Effects.EffectEvent[idx].red = 255;
-                Effects.EffectEvent[idx].blue = 1;
-                Effects.EffectEvent[idx].green = 128;
+                Effects.CalendarEvent[idx].r_g1 = 255;
+                Effects.CalendarEvent[idx].g_g1 = 255;
+                Effects.CalendarEvent[idx].b_g1 = 255;
+                Effects.CalendarEvent[idx].r_g2 = 128;
+                Effects.CalendarEvent[idx].g_g2 = 127;
+                Effects.CalendarEvent[idx].b_g2 = 126;
+                Effects.CalendarEvent[idx].r_g3 = 120;
+                Effects.CalendarEvent[idx].g_g3 = 119;
+                Effects.CalendarEvent[idx].b_g3 = 118;
+                   
+                Effects.CalendarEvent[idx].dimming = 100;      
             }
             
             Effects.listlen = _MAXEFFECTEVENTS;

@@ -4,29 +4,41 @@
 #include "main.h"
 
 #ifdef _USE_DMX512
-    #define _MAXEFFECTEVENTS    32
+    #define _MAXEFFECTEVENTS    5
 
     typedef struct __attribute__((packed))
     {
-        uint8_t enabled;       // 0 = libre, 1 = activo
-        uint8_t day;           // 1-31
-        uint8_t month;         // 1-12
-        uint8_t weekday;       // 0-6
-        uint8_t hour;          // 0-23
-        uint8_t minute;        // 0-59
-        uint8_t second;        // 0-59
-        uint8_t effect;        // Código de efecto
+        uint8_t  enabled;
 
-        uint8_t red;           // 0-255
-        uint8_t green;         // 0-255
-        uint8_t blue;          // 0-255
-    } stEffectEvent;
+        uint8_t  start_hour;
+        uint8_t  start_minute;
+        uint8_t  end_hour;
+        uint8_t  end_minute;
+
+        uint8_t  days_mask;
+
+        uint8_t action;
+
+        uint8_t  r_g1;
+        uint8_t  g_g1;
+        uint8_t  b_g1;
+        uint8_t  r_g2;
+        uint8_t  g_g2;
+        uint8_t  b_g2;
+        uint8_t  r_g3;
+        uint8_t  g_g3;
+        uint8_t  b_g3;
+
+        uint8_t  dimming;
+
+    } stCalendarEvent;
 
     typedef struct __attribute__((packed))
     {
         uint8_t stid;       // 0xE3
         uint8_t listlen;    // Longitud del la lista de effectos por calendario
-        stEffectEvent EffectEvent[_MAXEFFECTEVENTS];
+        uint8_t mode;       // Modo de operación
+        stCalendarEvent CalendarEvent[_MAXEFFECTEVENTS];
         uint16_t crc;
     }stEffects;
 
@@ -112,6 +124,7 @@ uint8_t *_GetHubId(void);
 stEffects *_GetNVEffects(void);
 int _InitNVEffects(void);
 int _NVEffectsWrite(void);
+stEffects *_GetNVEffectsPtr(void);
 
 
 #endif

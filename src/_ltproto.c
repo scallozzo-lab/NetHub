@@ -213,7 +213,8 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                         {
                             _SetRGBCurrentMode(&RxLTHubStatus->DevbitList[0]);    
                         }
-                        else _SetRGBMode(_RGB_MODE_AUTO);    
+                        else 
+                            _SetRGBMode(_RGB_MODE_AUTO);    
                     } 
                 }
                 break;
@@ -302,7 +303,7 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
 
                     printf("CalendarList:\n");
 
-                    for(int i = 0; i < _MAXCALENDARLST; i++)
+                    for(int i = 0; i < _MAXEFFECTEVENTS; i++)
                     {
                         printf("Calendar[%d]\n", i);
 

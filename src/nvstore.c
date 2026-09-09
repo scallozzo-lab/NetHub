@@ -250,26 +250,51 @@ uint8_t *_GetHubId(void)
             printf("[_InitNVEffects] Effects OK\n");
             printf("stid     = %02X\n", Effects.stid);
             printf("listlen  = %d\n", Effects.listlen);
+            printf("Mode = %02X\n", Effects.mode);
 
             for(int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
             {
-                stEffectEvent *event = &Effects.EffectEvent[idx];
+                stCalendarEvent *event = &Effects.CalendarEvent[idx];
 
                 printf("Effect[%02d] ", idx);
 
                 if(event->enabled)
                 {
-                    printf("EN %d date=%02d/%02d weekday=%02d time=%02d:%02d effect=%02X RGB=(%02X,%02X,%02X)\n",
-                        idx,
-                        event->day,
-                        event->month,
-                        event->weekday,
-                        event->hour,
-                        event->minute,
-                        event->effect,
-                        event->red,
-                        event->green,
-                        event->blue);
+                    printf(
+                    "[%u] EN:%u "
+                    "START:%02u:%02u "
+                    "END:%02u:%02u "
+                    "DAYS:0x%02X "
+                    "ACT:%u "
+                    "G1:(%u,%u,%u) "
+                    "G2:(%u,%u,%u) "
+                    "G3:(%u,%u,%u) "
+                    "DIM:%u\r\n",
+
+                    idx,
+                    event->enabled,
+
+                    event->start_hour,
+                    event->start_minute,
+
+                    event->end_hour,
+                    event->end_minute,
+
+                    event->days_mask,
+                    event->action,
+
+                    event->r_g1,
+                    event->g_g1,
+                    event->b_g1,
+                    event->r_g2,
+                    event->g_g2,
+                    event->b_g2,
+
+                    event->r_g3,
+                    event->g_g3,
+                    event->b_g3,
+
+                    event->dimming);
                 }
                 else
                 {
@@ -289,6 +314,11 @@ uint8_t *_GetHubId(void)
         if(Effects.stid == 0xE3)
             return &Effects;
         else return NULL;
+    }
+
+    stEffects *_GetNVEffectsPtr(void)
+    {
+        return &Effects;
     }
 
 #endif
