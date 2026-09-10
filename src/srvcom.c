@@ -445,9 +445,10 @@ void _ProcSrvCom(void)
     static uint16_t timeuptimer = 0, timerrx = 0;
     uint8_t *prxcmd_data = 0, *prx_pos = 0;
     uint16_t rxdatalen = 0, rxlen = 0;
-    static gralrx = 0;
+    static uint8_t gralrx = 0;
     static uint8_t xregretry = 0;
     static uint16_t xdnsretry = 0;
+    static uint16_t GralCommTimer = 0;
 
 
 #ifdef _USE_DEBUG_TXRX
@@ -752,6 +753,7 @@ void _ProcSrvCom(void)
             timerrx = 0;
             SrvCom.stage++;
             xregretry = 0;
+            GralCommTimer = 0;
             // Listo para enviar y recibir
             SrvCom.status |= SRVCOM_STS_LINKRDY;
         }        
@@ -807,6 +809,15 @@ void _ProcSrvCom(void)
             static uint16_t exttimer = 0;
             static uint8_t rxpolling = 0;
 
+            if(GralCommTimer < _CATNMAX_TIMER_RESTARTCOMM) GralCommTimer++;
+            else
+            {
+                printf("MODEM RESTART Timeout...\n");
+                gralrx = 0;
+                _InitSrvCom(1);
+                break;
+            }
+
             if(rxcmd & SIMCOM_RX_NODATA)
             {
 #ifdef _USE_DEBUG_SRVCOM
@@ -822,6 +833,7 @@ void _ProcSrvCom(void)
 #ifdef _USE_DEBUG_SRVCOM
                 printf("[_ProcSrvCom] RX OK...\n");
 #endif                
+                GralCommTimer = 0;
                 timerrx = 0;
                 gralrx = 0;
                 SrvCom.status &= ~SRVCOM_STS_RXRDY;
@@ -963,11 +975,7 @@ void _ProcSrvCom(void)
                     if(SrvCom.netip == 0)
                         _TxATCom(_AT_CHECKIP);
                     else 
-                    { 
-                        //_TxATCom(_AT_GETRXSTATUS);        
-                        //SrvCom.status |= SRVCOM_STS_RXREQ_PENDING;
                         _TxATCom(_AT_GETGNSSINFO);
-                    }
                 }
                 else 
                 {

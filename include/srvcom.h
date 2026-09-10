@@ -37,7 +37,7 @@
 #define _CANTMAX_TXSRV_RETRY    20
 #define _CANTMAX_CONN_RETRY     30
 #define _CANTMAX_RETRY_NOREG    15
-
+#define _CATNMAX_TIMER_RESTARTCOMM  30000
 
 
 #define _AT_READY_1     "*ATREADY:1"                                    // UCC de inicio
