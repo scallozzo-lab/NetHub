@@ -9,6 +9,7 @@
 
 static stSrvCom SrvCom = {0};
 static uint8_t rxretry = 0;
+static uint8_t _DestIP[16] = {0};
 
 uint32_t _GetNetIP(void)
 {
@@ -33,6 +34,51 @@ uint16_t _GetSrvComTxTOStat(void)
 uint16_t _GetSrvComRxStat(void)
 {
     return SrvCom.rxstat;
+}
+
+int ParseDNSIP(const char *rx, char *ip, size_t ip_size)
+{
+    const char *p;
+    const char *q1;
+    const char *q2;
+    const char *q3;
+    const char *q4;
+    size_t len;
+
+    if (!rx || !ip || ip_size == 0)
+        return 0;
+
+    p = strstr(rx, "+CDNSGIP:1,");
+    if (!p)
+        return 0;
+
+    // Primer string: hostname
+    q1 = strchr(p, '"');
+    if (!q1)
+        return 0;
+
+    q2 = strchr(q1 + 1, '"');
+    if (!q2)
+        return 0;
+
+    // Segundo string: IP
+    q3 = strchr(q2 + 1, '"');
+    if (!q3)
+        return 0;
+
+    q4 = strchr(q3 + 1, '"');
+    if (!q4)
+        return 0;
+
+    len = (size_t)(q4 - (q3 + 1));
+
+    if (len == 0 || len >= ip_size)
+        return 0;
+
+    memcpy(ip, q3 + 1, len);
+    ip[len] = '\0';
+
+    return 1;
 }
 
 uint32_t inet_aton(const char *ip)
@@ -255,6 +301,9 @@ uint16_t CheckModemRx(uint8_t *rx, uint16_t len, uint8_t **rxcmd, uint8_t **rxda
             uret |= SIMCOM_RX_NODATA;
         if(!memcmp(prx, "+CGNSSINFO:",11))
             uret |= SIMCOM_GNSSINFO;
+       if(!memcmp(prx, "+CDNSGIP:",9))
+            uret |= SIMCOM_DNSRESOLUTION;
+   
     }
     else 
         printf("[CheckModemRx] Error No <CR><LF> [%02X-%02X]\n", rx[0], rx[1]);
@@ -398,6 +447,7 @@ void _ProcSrvCom(void)
     uint16_t rxdatalen = 0, rxlen = 0;
     static gralrx = 0;
     static uint8_t xregretry = 0;
+    static uint16_t xdnsretry = 0;
 
 
 #ifdef _USE_DEBUG_TXRX
@@ -503,7 +553,7 @@ void _ProcSrvCom(void)
     switch(SrvCom.stage)
     {
         case SRVCOM_STG_POWERUP:
-#ifdef _USE_DEBUG_SRVCOM
+#ifdef _USE_DEBUG_SRVCOMxdnsretry
             printf("[_ProcSrvCom] Powering Up SIMCOM 7670...\n");
 #endif
         timeuptimer = _MAXTIMEUPTIMER;
@@ -701,6 +751,7 @@ void _ProcSrvCom(void)
         {
             timerrx = 0;
             SrvCom.stage++;
+            xregretry = 0;
             // Listo para enviar y recibir
             SrvCom.status |= SRVCOM_STS_LINKRDY;
         }        
@@ -720,6 +771,37 @@ void _ProcSrvCom(void)
         else if(--rxretry == 0) _TxATCom(_AT_POWERON_GNSS);   
         break;
 
+        case SRVCOM_STG_GETIPADDRESS:
+        {
+            xdnsretry++;
+
+            if(rxcmd & SIMCOM_DNSRESOLUTION)
+            {
+                char ip[16] = {0};
+        
+                timerrx = 0;
+    #ifdef _USE_DEBUG_SRVCOM
+                printf("[_ProcSrvCom] SRVCOM_STG_GETIPADDRESS. %s\n", prxcmd_data);
+    #endif                
+                
+                int r = ParseDNSIP((const char *)prxcmd_data, ip, sizeof(ip));
+                
+                if(r)
+                {
+                    printf("dns rest %d ip [%s]\n",r, ip);
+                    memcpy(_DestIP, ip, sizeof(_DestIP));
+                }
+                SrvCom.stage++;
+            }        
+            else if(xdnsretry >= 2000) 
+            {
+                _TxATCom(_AT_GETIPADDRESS);   
+                xdnsretry = 0;
+            }
+        }
+        break;
+        
+      
         case SRVCOM_STG_IDLE:
         {
             static uint16_t exttimer = 0;
@@ -769,7 +851,14 @@ void _ProcSrvCom(void)
             else if(SrvCom.status & SRVCOM_STS_TXLOADED && !(SrvCom.status & SRVCOM_STS_RXREQ_PENDING) )
             {
                 uint8_t tmpstr[64] = {0}; 
-                sprintf((char*)tmpstr, "AT+CIPSEND=0,%d,\"186.123.27.7\",%d", SrvCom.txsrvdatalen, 5000);
+                //sprintf((char*)tmpstr, "AT+CIPSEND=0,%d,\"186.123.27.7\",%d", SrvCom.txsrvdatalen, 5000);
+                
+                //sprintf((char*)tmpstr, "AT+CIPSEND=0,%d,\"138.36.239.110\",%d", SrvCom.txsrvdatalen, 5000);
+                
+                //sprintf((char*)tmpstr, "AT+CIPSEND=0,%d,\"srv.luxiva-technology.com.ar\",%d", SrvCom.txsrvdatalen, 5000);
+                
+                sprintf((char *)tmpstr, "AT+CIPSEND=0,%d,\"%s\",%d", SrvCom.txsrvdatalen, _DestIP, _SRV_PORT);
+                
                 _TxATCom((char*)tmpstr);
                 SrvCom.status &= ~SRVCOM_STS_TXLOADED;
                 SrvCom.stage = SRVCOM_STG_TRANSMIT;

@@ -15,8 +15,6 @@
 #define _MAXSRVRXBUFFER     128
 #define _CANTMAXSLOTS       8
 
-//#define _MAXSRVTXBUFFER     1500
-
 #define _TIMEBASE 10
 
 #define _MAXTIMEOUTRX       (3 * _TIMEBASE)
@@ -41,6 +39,7 @@
 #define _CANTMAX_RETRY_NOREG    15
 
 
+
 #define _AT_READY_1     "*ATREADY:1"                                    // UCC de inicio
 #define _AT_CPIN        "AT+CPIN?"                                      // Rx-> +CPIN: READY
 #define _AT_SETAPN      "AT+CGDCONT=1,\"IP\",\"igprs.claro.com.ar\""    // Rx-> OK
@@ -59,6 +58,7 @@
 
 #define _AT_POWERON_GNSS    "AT+CGNSSPWR=1"
 #define _AT_GETGNSSINFO     "AT+CGNSSINFO" // +CGNSSINFO: 1,1,20260825221730.000,-34.58,-58.54,25.3,0.5,123.4,8,1.2,1.8,2.1,12,0.9
+#define _AT_GETIPADDRESS    "AT+CDNSGIP=\"srv.luxiva-technology.com.ar\""
 
 #ifdef _USE_SIMCOM_NOECHO
     #define _AT_    "ATE0"
@@ -98,6 +98,8 @@ typedef enum
     
     SRVCOM_STG_ENABLEGNSS,
 
+    SRVCOM_STG_GETIPADDRESS,
+
     SRVCOM_STG_IDLE,
     SRVCOM_STG_TRANSMIT,
     SRVCOM_STG_RECEIVE,
@@ -135,7 +137,7 @@ typedef enum
     SIMCOM_RX_NODATA        = BIT12,
     SIMCOM_RESTART          = BIT13,
     SIMCOM_GNSSINFO         = BIT14,
-    SIMCOM_res15            = BIT15
+    SIMCOM_DNSRESOLUTION    = BIT15
 }eModemRxCmds;
 
 
