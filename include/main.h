@@ -11,7 +11,9 @@
 #define _NETHUBMODE
 #define _USE_SIMCOM_NOECHO
 
-#define _SRV_HOST       "srv.luxiva-technology.com.ar"
+//#define _SRV_HOST       "srv.luxiva-technology.com.ar"
+#define _SRV_HOST       "app.luxiva-technology.com.ar"      // casa
+
 #define _SRV_PORT       5000
 //#define _USE_DUMMY_TEST_DEVICE        // Solo para probar, crea un config id de prueba
 //#define _USE_DUMMY_TEST_NOLTSERVICE     // Solo para probar genera lista sin estar conectado a ltserver

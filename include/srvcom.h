@@ -58,8 +58,7 @@
 
 #define _AT_POWERON_GNSS    "AT+CGNSSPWR=1"
 #define _AT_GETGNSSINFO     "AT+CGNSSINFO" // +CGNSSINFO: 1,1,20260825221730.000,-34.58,-58.54,25.3,0.5,123.4,8,1.2,1.8,2.1,12,0.9
-#define _AT_GETIPADDRESS    "AT+CDNSGIP=\"srv.luxiva-technology.com.ar\""
-
+#define _AT_GETIPADDRESS    "AT+CDNSGIP=\"" _SRV_HOST "\""
 #ifdef _USE_SIMCOM_NOECHO
     #define _AT_    "ATE0"
 #else
