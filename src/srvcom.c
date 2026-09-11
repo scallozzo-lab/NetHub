@@ -11,6 +11,17 @@ static stSrvCom SrvCom = {0};
 static uint8_t rxretry = 0;
 static uint8_t _DestIP[16] = {0};
 
+uint8_t _GetNetStat(void)
+{
+    return SrvCom.netstat;
+}
+
+void _SetNetStat(uint8_t s)
+{
+    SrvCom.netstat = s;
+}
+
+
 uint32_t _GetNetIP(void)
 {
     return SrvCom.netip;
@@ -630,7 +641,9 @@ void _ProcSrvCom(void)
             uint8_t constatus = (prxcmd_data)? prxcmd_data[8] : '?';
             SrvCom.status &= ~SRVCOM_STS_RXRDY;     
         
-            if(constatus == '1' || constatus == '5')
+            _SetNetStat(constatus);
+
+            if(constatus == CREG_STS_REGISTERED_LOCAL || constatus == CREG_STS_REGISTERED_ROAMING)
             {    
                 printf("CONECTADO Modo-> %c\n", constatus);
                 timerrx = 0;

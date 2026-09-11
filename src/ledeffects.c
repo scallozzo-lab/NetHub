@@ -2,6 +2,7 @@
 #include "ledeffects.h"
 #include "_dmx512.h"
 #include "srtc.h"
+#include "_ltproto.h"
 #include <string.h>
 
 static uint8_t dmx[4] = {0}, dmxold[4] = {0};
@@ -109,6 +110,13 @@ void _SetRGBMode(uint8_t m)
         p_stnv->mode = m;
         _NVEffectsWrite();  
     }
+}
+
+void _SetRGBEffect(stCurrentMode *st, uint8_t mode)
+{
+    if(st)
+        memcpy(&_RGBCurrentMode, st, sizeof(_RGBCurrentMode));
+    ledEffect = mode;
 }
 
 uint8_t _GetMDXSeq(void)
@@ -219,6 +227,10 @@ void _ProcModeAuto(rtc_soft_t *rtc)
 
     if (!rtc || !p_stnv)
         return;
+
+    if(!(_GetHubStatus() & HUB_STS_DTIME_SYNCRO_OK))
+        return;            
+
     // Si estamos en modo automático
     if (p_stnv->mode == _RGB_MODE_AUTO)
     {
@@ -233,15 +245,20 @@ void _ProcModeAuto(rtc_soft_t *rtc)
 
             if (!ev->enabled)
                 continue;
-
             /*
-             * OJO:
-             * si days_mask es realmente una máscara de bits,
-             * acá no debería ser rtc->day == days_mask.
-             */
-            if (rtc->day != ev->days_mask)
-                continue;
+            * Verificar si el evento corresponde al día actual.
+            * rtc->day: 1 = LU ... 7 = DO
+            * days_mask: BIT0 = LU ... BIT6 = DO
+            */
+            uint8_t day_bit = (1U << (RTC_GetWeekDay(rtc) - 1));
 
+            //printf("day = %d, bit %02X\n", RTC_GetWeekDay(rtc), day_bit);
+
+            if ((ev->days_mask & day_bit) == 0)
+            {
+                continue;
+            }
+            
             uint16_t start_min =
                 ((uint16_t)ev->start_hour * 60U) +
                 ev->start_minute;
@@ -251,22 +268,42 @@ void _ProcModeAuto(rtc_soft_t *rtc)
                 ev->end_minute;
 
             if ((now_min >= start_min) &&
-                (now_min < end_min))
+                (now_min <= end_min))
             {
                 event_active = 1;
 
                 // Aquí cargamos la estructura con los efectos
                 // _SetEffect(ev);
-                printf("********************** inicio del efecto\n");
+                stCurrentMode st;
+                st.mode = _RGB_MODE_AUTO;
+                st.rgbg1_enable = true;
+                st.rgbg1_r = ev->r_g1;
+                st.rgbg1_g = ev->g_g1;
+                st.rgbg1_b = ev->b_g1;
+                
+                st.rgbg2_enable = true;
+                st.rgbg2_r = ev->r_g2;
+                st.rgbg2_g = ev->g_g2;
+                st.rgbg2_b = ev->b_g2;
+              
+                st.rgbg3_enable = true;
+                st.rgbg3_r = ev->r_g3;
+                st.rgbg3_g = ev->g_g3;
+                st.rgbg3_b = ev->b_g3;
+                
+                _SetRGBEffect(&st, ev->action);
 
+                printf("**inicio del efecto now_min %d, start_min %d, end_min %d\n", now_min, start_min, end_min);
+                printf("Efecto %X\n", ev->action);
                 break;
             }
         }
 
         if (!event_active)
         {
-            printf("********************** FIN del efecto\n");
+            //printf("********************** FIN del efecto now_min %d, start_min %d, end_min %d\n", now_min, start_min, end_min);
             // Aquí apagamos el efecto
+            _SetRGBEffect(NULL, LED_EFFECT_OFF);
         }
     }
 }

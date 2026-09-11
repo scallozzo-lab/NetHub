@@ -38,7 +38,6 @@ typedef enum
 }ergbmode;  
 
 
-
 void _SetRGBCurrentMode(uint8_t *st);
 uint8_t _GetMDXSeq(void);
 void _SetMDXSeq(uint8_t s);

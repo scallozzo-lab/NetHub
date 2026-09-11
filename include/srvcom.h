@@ -70,6 +70,7 @@ typedef struct srvcom
 {
     uint8_t stage;
     uint8_t status;
+    uint8_t netstat;
     uint8_t txlast[_MAX_UART_TXBUFFER];
     uint16_t txlen;
     uint8_t txsrvdata[_MAX_UART_TXBUFFER];
@@ -80,6 +81,15 @@ typedef struct srvcom
     uint16_t txtimeout;
 }stSrvCom;
 
+typedef enum
+{
+    CREG_STS_UNREGISTERED       = '0',
+    CREG_STS_REGISTERED_LOCAL   = '1',
+    CREG_STS_SEARCHING          = '2',
+    CREG_STS_REJECTED           = '3',
+    CREG_STS_UNKNOWN            = '4',
+    CREG_STS_REGISTERED_ROAMING = '5'
+}ecregstat;
 
 typedef enum
 {
@@ -146,6 +156,8 @@ int _GetSrvComCHFree(void);
 uint8_t _GetSrvComLinkRdy(void);
 int _TxServer(uint8_t *buff, uint16_t len);
 uint32_t _GetNetIP(void);
+uint8_t _GetNetStat(void);
+void _SetNetStat(uint8_t s);
 uint8_t _GetSrvComStage(void);
 uint16_t _GetSrvComTxStat(void);
 uint16_t _GetSrvComRxStat(void);

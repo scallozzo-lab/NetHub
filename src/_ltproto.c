@@ -41,6 +41,15 @@ void ProcLCD(uint8_t flag)
     
     extern const uint8_t gear32x32[];
     extern const uint8_t altiva64x32[];
+    
+    const char *NetStat[6] = {
+                            "No Reg.  ",
+                            "Reg.Local",
+                            "Buscando ",
+                            "Rechazado",
+                            "?        ",
+                            "Roaming  " };
+    
 
     // cada 500ms
     if(flag)
@@ -66,7 +75,12 @@ void ProcLCD(uint8_t flag)
                                             _GetNetIP() & 0xff);
     
         _SelLCD2();
+        uint8_t stat = _GetNetStat(); 
+        
         SH1106_Printf(_FONT_8X8, 0,0, "NETHUB V%c.%c.%c", FW_VERSION_0 +0x30, FW_VERSION_1+0x30, FW_VERSION_REV);
+        SH1106_Printf(_FONT_8X8, 2,0, "NETStat %c      ", stat);
+        SH1106_Printf(_FONT_8X8, 3,0, "(%s)", (stat)? NetStat[stat - 0x30] : '-');
+        
         if(_GetFwUpdateReqFrame())
         {          
             //SH1106_Printf(_FONT_8X8, 7,0, "Actualizar %%d  ", (_GetFwUpdateReqFrame() / _GetFrameTotFrame()) * 100);
