@@ -589,7 +589,8 @@ void _ProcSrvCom(void)
             printf("[_ProcSrvCom] CommInit OK\n");
 #endif
             //SrvCom.stage = SRVCOM_STG_DISABLE_AUTONOT;
-            SrvCom.stage = SRVCOM_STG_CONFIG;
+            //SrvCom.stage = SRVCOM_STG_CONFIG;
+            SrvCom.stage = SRVCOM_STG_ENABLEGNSS;
        
         }
         else if(--rxretry == 0) 
@@ -603,7 +604,8 @@ void _ProcSrvCom(void)
         if(SrvCom.status & SRVCOM_STS_RXRDY)
         {
             SrvCom.status &= ~SRVCOM_STS_RXRDY;
-            SrvCom.stage = SRVCOM_STG_CONFIG;
+            //SrvCom.stage = SRVCOM_STG_CONFIG;
+            SrvCom.stage = SRVCOM_STG_ENABLEGNSS;
         }
         else if(--rxretry == 0) 
         {
@@ -611,6 +613,20 @@ void _ProcSrvCom(void)
             rxretry = _TIMERETRYAT;
         }
         break;
+
+        case SRVCOM_STG_ENABLEGNSS:
+        
+        if(rxcmd & SIMCOM_ANSWER_OK)
+        {
+            timerrx = 0;
+#ifdef _USE_DEBUG_SRVCOM
+            printf("[_ProcSrvCom] GNSS ENABLED.\n");
+#endif                
+            SrvCom.stage++;
+        }        
+        else if(--rxretry == 0) _TxATCom(_AT_POWERON_GNSS);   
+        break;
+
 
         case SRVCOM_STG_CONFIG:
 
@@ -773,19 +789,7 @@ void _ProcSrvCom(void)
         else if(--rxretry == 0) _TxATCom(_AT_NOAUTORX);
         break;
 
-        case SRVCOM_STG_ENABLEGNSS:
-        
-        if(rxcmd & SIMCOM_ANSWER_OK)
-        {
-            timerrx = 0;
-#ifdef _USE_DEBUG_SRVCOM
-            printf("[_ProcSrvCom] GNSS ENABLED.\n");
-#endif                
-            SrvCom.stage++;
-        }        
-        else if(--rxretry == 0) _TxATCom(_AT_POWERON_GNSS);   
-        break;
-
+    
         case SRVCOM_STG_GETIPADDRESS:
         {
             xdnsretry++;

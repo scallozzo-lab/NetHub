@@ -26,7 +26,7 @@
 //#define _USE_DEFAULT_NVRAMEFFECTS       // Crea por unica vez una lista de prueba de efectos
 /*--------------------------------------------------------------*/
 
-//#define _USE_DEBUG_SRVCOM
+#define _USE_DEBUG_SRVCOM
 #define _USE_DEBUG_TXRX
 //#define _USE_DEBUG_GNSS
 //#define _USE_DEBUG_TX_SRVCOM            
