@@ -22,7 +22,9 @@ typedef enum
 static LED_EFFECT_t ledEffect = LED_EFFECT_OFF;//LED_EFFECT_FIXED;//LED_EFFECT_FADE_IN_OUT;
 
 static uint16_t effectCounter = 0;
-static uint16_t effectDuration = 100; // 100 x 10ms = 1 segundo
+static uint16_t effectDuration = 1000; // 100 x 10ms = 1 segundo
+static uint16_t effectDuration_FI = 10000; // 100 x 10ms = 1 segundo
+static uint16_t effectDuration_FO = 10000; // 100 x 10ms = 1 segundo
 
 
 void _SetCalendarEvent(stCalendarEvent *pst)
@@ -112,11 +114,25 @@ void _SetRGBMode(uint8_t m)
     }
 }
 
+/*
 void _SetRGBEffect(stCurrentMode *st, uint8_t mode)
 {
     if(st)
         memcpy(&_RGBCurrentMode, st, sizeof(_RGBCurrentMode));
     ledEffect = mode;
+}
+    */
+
+void _SetRGBEffect(stCurrentMode *st, uint8_t mode)
+{
+    if(st)
+        memcpy(&_RGBCurrentMode, st, sizeof(_RGBCurrentMode));
+
+    if (ledEffect != mode)
+    {
+        ledEffect = mode;
+        effectCounter = 0;
+    }
 }
 
 uint8_t _GetMDXSeq(void)
@@ -151,37 +167,101 @@ void _ProcLEDEffect(void)
             dmx[3] = 0;
         break;
 
-
         case LED_EFFECT_FADE_IN:
+        {
+            uint8_t fade;
 
-            if (effectCounter < effectDuration)
+            /*
+                * effectCounter:
+                *      0 -------------------- effectDuration
+                *
+                * fade:
+                *      0 -------------------- 255
+                */
+            if (effectCounter < effectDuration_FI)
+            {
                 effectCounter++;
+            }
 
-            value = (uint8_t)((effectCounter * 255UL) / effectDuration);
+            fade = (uint8_t)(
+                ((uint32_t)effectCounter * 255UL) /
+                effectDuration_FI
+            );
 
-            dmx[0] = value;
-            dmx[1] = value;
-            dmx[2] = value;
+            /*
+                * Fade desde negro hasta el RGB configurado.
+                *
+                * Ejemplo RGB = (255, 100, 20)
+                *
+                * fade =   0 -> (  0,  0,  0)
+                * fade = 128 -> (128, 50, 10)
+                * fade = 255 -> (255,100, 20)
+                */
+            dmx[0] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_r * fade) / 255UL
+            );
+
+            dmx[1] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_g * fade) / 255UL
+            );
+
+            dmx[2] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_b * fade) / 255UL
+            );
+
+            dmx[3] = 0;
 
             break;
-
+        }
 
         case LED_EFFECT_FADE_OUT:
+        {
+            uint8_t fade;
 
-            if (effectCounter < effectDuration)
+            /*
+            * 255 -> 0
+            *
+            * Al comenzar:
+            * effectCounter = 0
+            * fade = 255
+            *
+            * Al terminar:
+            * effectCounter = effectDuration
+            * fade = 0
+            */
+            fade = 255U - (uint8_t)(
+                ((uint32_t)effectCounter * 255UL) /
+                effectDuration_FO
+            );
+
+            /*
+            * Grupo 1 RGB:
+            * color configurado -> negro
+            */
+            dmx[0] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_r * fade) / 255UL
+            );
+
+            dmx[1] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_g * fade) / 255UL
+            );
+
+            dmx[2] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_b * fade) / 255UL
+            );
+
+            dmx[3] = 0;
+
+            if (effectCounter < effectDuration_FO)
+            {
                 effectCounter++;
-
-            value = 255 -
-                    (uint8_t)((effectCounter * 255UL) / effectDuration);
-
-            dmx[0] = value;
-            dmx[1] = value;
-            dmx[2] = value;
+            }
 
             break;
-
+        }
    
-    case LED_EFFECT_FADE_IN_OUT:
+/*
+        case LED_EFFECT_FADE_IN_OUT:
 
         effectCounter++;
 
@@ -210,7 +290,81 @@ void _ProcLEDEffect(void)
 
         break;
     }
- 
+ */
+    case LED_EFFECT_FADE_IN_OUT:
+    {
+        uint8_t fade;
+
+        /*
+        * effectCounter recorre:
+        *
+        * 0 ---------------- effectDuration ---------------- 2*effectDuration
+        *
+        *        FADE IN                         FADE OUT
+        *
+        * fade:
+        * 0 ---------> 255                 255 ---------> 0
+        */
+
+        if (effectCounter < effectDuration)
+        {
+            /*
+            * FADE IN
+            * 0 -> 255
+            */
+            fade = (uint8_t)(
+                ((uint32_t)effectCounter * 255UL) /
+                effectDuration
+            );
+        }
+        else
+        {
+            /*
+            * FADE OUT
+            * 255 -> 0
+            */
+            uint16_t outCounter =
+                effectCounter - effectDuration;
+
+            fade = 255U - (uint8_t)(
+                ((uint32_t)outCounter * 255UL) /
+                effectDuration
+            );
+        }
+
+        /*
+        * Aplicamos el fade sobre el RGB programado.
+        */
+        dmx[0] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg1_r * fade) / 255UL
+        );
+
+        dmx[1] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg1_g * fade) / 255UL
+        );
+
+        dmx[2] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg1_b * fade) / 255UL
+        );
+
+        dmx[3] = 0;
+
+        /*
+        * Avanzamos el efecto.
+        * Cuando termina el FADE OUT volvemos a empezar.
+        */
+        effectCounter++;
+
+        if (effectCounter >= (effectDuration * 2U))
+        {
+            effectCounter = 0;
+        }
+
+        break;
+    }
+
+    }
+
     // Si el contenido cambió o pasaron mas de N segundos, lo envía a la controladora
     if(memcmp(dmx, dmxold, 3) || (framecount++ >= 1000) )
     {
@@ -223,6 +377,7 @@ void _ProcLEDEffect(void)
 
 void _ProcModeAuto(rtc_soft_t *rtc)
 {
+    static int8_t lastevent = -1;
     stEffects *p_stnv = _GetNVEffects();
 
     if (!rtc || !p_stnv)
@@ -273,7 +428,6 @@ void _ProcModeAuto(rtc_soft_t *rtc)
                 event_active = 1;
 
                 // Aquí cargamos la estructura con los efectos
-                // _SetEffect(ev);
                 stCurrentMode st;
                 st.mode = _RGB_MODE_AUTO;
                 st.rgbg1_enable = true;
@@ -292,6 +446,7 @@ void _ProcModeAuto(rtc_soft_t *rtc)
                 st.rgbg3_b = ev->b_g3;
                 
                 _SetRGBEffect(&st, ev->action);
+                lastevent = ev->action;
 
                 printf("**inicio del efecto now_min %d, start_min %d, end_min %d\n", now_min, start_min, end_min);
                 printf("Efecto %X\n", ev->action);
@@ -301,9 +456,25 @@ void _ProcModeAuto(rtc_soft_t *rtc)
 
         if (!event_active)
         {
-            //printf("********************** FIN del efecto now_min %d, start_min %d, end_min %d\n", now_min, start_min, end_min);
-            // Aquí apagamos el efecto
-            _SetRGBEffect(NULL, LED_EFFECT_OFF);
+            if (lastevent >= 0)
+            {
+                stCalendarEvent *ev =
+                    &p_stnv->CalendarEvent[lastevent];
+                /*
+                * Si el evento que acaba de terminar era FADE_OUT,
+                * iniciamos ahora el apagado progresivo.
+                */
+                if (ev->action == LED_EFFECT_FADE_OUT)
+                {
+                    _SetRGBEffect(NULL, LED_EFFECT_FADE_OUT);
+                }
+                else
+                {
+                    _SetRGBEffect(NULL, LED_EFFECT_OFF);
+                }
+
+                lastevent = -1;
+            }
         }
     }
 }
