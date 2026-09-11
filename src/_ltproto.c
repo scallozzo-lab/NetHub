@@ -173,6 +173,16 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                                                             RxLTHubStatus->LTVer[0],
                                                             RxLTHubStatus->LTVer[1],
                                                             RxLTHubStatus->LTVer[2]);
+                        printf("TxConfig %d\n", RxLTHubStatus->TxConfig);
+
+                        printf("SrvFyH %02u/%02u/%04u %02u:%02u:%02u\n",
+                            RxLTHubStatus->rtc.day,
+                            RxLTHubStatus->rtc.month,
+                            RxLTHubStatus->rtc.year,
+                            RxLTHubStatus->rtc.hour,
+                            RxLTHubStatus->rtc.min,
+                            RxLTHubStatus->rtc.sec);
+
 #endif    
                         // Si la versión informada por el servidor es diferente a la actual dispara le proceso para actualizar EEPROM x frame
                         if((RxLTHubStatus->HubVer[0] != (FW_VERSION_0 + 0x30)) || (RxLTHubStatus->HubVer[1] != (FW_VERSION_1 + 0x30) ))
@@ -230,6 +240,12 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                         else 
                             _SetRGBMode(_RGB_MODE_AUTO);    
                     } 
+                    
+                    // Si Aun no tenemos fecha y hora sincronizada
+                    if(!(_GetHubStatus() & HUB_STS_DTIME_SYNCRO_OK))
+                    {
+                        _SetsRTC(RxLTHubStatus->rtc);
+                    }
                 }
                 break;
 

@@ -916,7 +916,7 @@ void _ProcSrvCom(void)
             }        
             else if(rxcmd & SIMCOM_GNSSINFO)
             {
-
+                static uint8_t lastmin = 0xff;
 #ifdef _USE_DEBUG_SRVCOM
                 printf("[_ProcSrvCom] RX SIMCOM_GNSSINFO...%s\n", prxcmd_data);
 #endif                
@@ -926,7 +926,8 @@ void _ProcSrvCom(void)
                     _SetHubStatus(HUB_STS_GNSS_RDY);
                     
                     // Si el RTC no está sicronizado, se actualiza FyH
-                    if(!(_GetHubStatus() & HUB_STS_DTIME_SYNCRO_OK))
+                    //if(!(_GetHubStatus() & HUB_STS_DTIME_SYNCRO_OK))
+                    if(lastmin != ((_GetGNSS()->time >> 8)  & 0xFF))
                     {
                         rtc_soft_t rtc;
                         rtc.day   = BCD_TO_DEC((_GetGNSS()->date >> 16) & 0xFF);
@@ -969,6 +970,8 @@ void _ProcSrvCom(void)
                             
                             // Date and time sincronized by GNSS
                             _SetHubStatus(HUB_STS_DTIME_SYNCRO_OK);
+                        
+                            lastmin = (_GetGNSS()->time >> 8)  & 0xFF;
                         }
                     }
                 }
