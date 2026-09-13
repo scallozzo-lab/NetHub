@@ -6,6 +6,7 @@
 #ifdef _USE_DMX512
     #define _MAXEFFECTEVENTS    5
 
+    /*
     typedef struct __attribute__((packed))
     {
         uint8_t  enabled;
@@ -32,6 +33,60 @@
         uint8_t  dimming;
 
     } stCalendarEvent;
+
+    */
+   
+    typedef struct
+    {
+        uint8_t  enabled;
+
+        uint8_t  start_hour;
+        uint8_t  start_minute;
+        uint8_t  end_hour;
+        uint8_t  end_minute;
+
+        uint8_t  enabled_t2;
+
+        uint8_t  start_hour_t2;
+        uint8_t  start_minute_t2;
+        uint8_t  end_hour_t2;
+        uint8_t  end_minute_t2;
+
+        uint8_t  days_mask;
+
+        uint8_t action;
+
+        uint8_t  r_g1;
+        uint8_t  g_g1;
+        uint8_t  b_g1;
+        uint8_t  w_g1;
+        
+        uint8_t  r_g2;
+        uint8_t  g_g2;
+        uint8_t  b_g2;
+        uint8_t  w_g2;
+        
+        uint8_t  r_g3;
+        uint8_t  g_g3;
+        uint8_t  b_g3;
+        uint8_t  w_g3;
+
+        uint8_t  r_g4;
+        uint8_t  g_g4;
+        uint8_t  b_g4;
+        uint8_t  w_g4;
+
+        bool reflector1_enable;
+        bool reflector1_on;
+        bool reflector2_enable;
+        bool reflector2_on;
+
+        uint8_t  dimming;
+
+    } stCalendarEvent;
+
+
+
 
     typedef struct __attribute__((packed))
     {

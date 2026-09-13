@@ -411,6 +411,9 @@ void _10msFunctions(void)
     if(xDiv++ >= 95)
     {
         _1SecFunctions();
+
+    //LedMonitor();
+
         xDiv = 0;
     }
 }
