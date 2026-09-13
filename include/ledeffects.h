@@ -6,6 +6,10 @@
 #include "nvstore.h"
 #include "srtc.h"
 
+#define _DMX512_CHXDEVICE   4
+#define _DMX512_DEVICES     4
+#define _DMX512_LEN         (_DMX512_CHXDEVICE * _DMX512_DEVICES)
+
 typedef struct __attribute__((packed))
 {
     uint8_t mode;

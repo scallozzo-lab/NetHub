@@ -241,70 +241,122 @@ uint8_t *_GetHubId(void)
 
         if(ack)
         {
-            printf("[_InitNVEffects] _NVEffectsRead Error %d\n", ack);
+            printf("[_InitNVEffects] _NVEffectsRead Error %d\r\n", ack);
             return ack;
         }
 
-        #ifdef _USE_DEBUG_NVSTORE
+    #ifdef _USE_DEBUG_NVSTORE
 
-            printf("[_InitNVEffects] Effects OK\n");
-            printf("stid     = %02X\n", Effects.stid);
-            printf("listlen  = %d\n", Effects.listlen);
-            printf("Mode = %02X\n", Effects.mode);
+        printf("\r\n");
+        printf("========================================\r\n");
+        printf("[_InitNVEffects] Effects OK\r\n");
+        printf("========================================\r\n");
 
-            for(int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
+        printf("stid     : 0x%02X\r\n", Effects.stid);
+        printf("listlen  : %u\r\n",   Effects.listlen);
+        printf("mode     : 0x%02X\r\n", Effects.mode);
+
+        printf("\r\nCalendar Events\r\n");
+
+        for(int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
+        {
+            stCalendarEvent *event = &Effects.CalendarEvent[idx];
+
+            printf("\r\n----------------------------------------\r\n");
+            printf("EVENT [%02d]\r\n", idx);
+            printf("----------------------------------------\r\n");
+
+            printf("  ENABLED : %u\r\n", event->enabled);
+
+            if(!event->enabled)
             {
-                stCalendarEvent *event = &Effects.CalendarEvent[idx];
-
-                printf("Effect[%02d] ", idx);
-
-                if(event->enabled)
-                {
-                    printf(
-                    "[%u] EN:%u "
-                    "START:%02u:%02u "
-                    "END:%02u:%02u "
-                    "DAYS:0x%02X "
-                    "ACT:%u "
-                    "G1:(%u,%u,%u) "
-                    "G2:(%u,%u,%u) "
-                    "G3:(%u,%u,%u) "
-                    "DIM:%u\r\n",
-
-                    idx,
-                    event->enabled,
-
-                    event->start_hour,
-                    event->start_minute,
-
-                    event->end_hour,
-                    event->end_minute,
-
-                    event->days_mask,
-                    event->action,
-
-                    event->r_g1,
-                    event->g_g1,
-                    event->b_g1,
-                    event->r_g2,
-                    event->g_g2,
-                    event->b_g2,
-
-                    event->r_g3,
-                    event->g_g3,
-                    event->b_g3,
-
-                    event->dimming);
-                }
-                else
-                {
-                    printf("DIS\n");
-                }
+                printf("  STATUS  : DISABLED\r\n");
+                continue;
             }
 
-            printf("crc      = %04X\n", Effects.crc);
+            // -------------------------------------------------
+            // Horario principal
+            // -------------------------------------------------
+            printf("  T1      : %02u:%02u -> %02u:%02u\r\n",
+                event->start_hour,
+                event->start_minute,
+                event->end_hour,
+                event->end_minute);
 
-        #endif
+            // -------------------------------------------------
+            // Segundo horario
+            // -------------------------------------------------
+            printf("  T2 EN   : %u\r\n",
+                event->enabled_t2);
+
+            if(event->enabled_t2)
+            {
+                printf("  T2      : %02u:%02u -> %02u:%02u\r\n",
+                    event->start_hour_t2,
+                    event->start_minute_t2,
+                    event->end_hour_t2,
+                    event->end_minute_t2);
+            }
+
+            // -------------------------------------------------
+            // Configuración general
+            // -------------------------------------------------
+            printf("  DAYS    : 0x%02X\r\n",
+                event->days_mask);
+
+            printf("  ACTION  : %u\r\n",
+                event->action);
+
+            // -------------------------------------------------
+            // RGBW
+            // -------------------------------------------------
+            printf("  G1 RGBW : R:%3u G:%3u B:%3u W:%3u\r\n",
+                event->r_g1,
+                event->g_g1,
+                event->b_g1,
+                event->w_g1);
+
+            printf("  G2 RGBW : R:%3u G:%3u B:%3u W:%3u\r\n",
+                event->r_g2,
+                event->g_g2,
+                event->b_g2,
+                event->w_g2);
+
+            printf("  G3 RGBW : R:%3u G:%3u B:%3u W:%3u\r\n",
+                event->r_g3,
+                event->g_g3,
+                event->b_g3,
+                event->w_g3);
+
+            printf("  G4 RGBW : R:%3u G:%3u B:%3u W:%3u\r\n",
+                event->r_g4,
+                event->g_g4,
+                event->b_g4,
+                event->w_g4);
+
+            // -------------------------------------------------
+            // Reflectores
+            // -------------------------------------------------
+            printf("  REF1    : EN:%u ON:%u\r\n",
+                event->reflector1_enable,
+                event->reflector1_on);
+
+            printf("  REF2    : EN:%u ON:%u\r\n",
+                event->reflector2_enable,
+                event->reflector2_on);
+
+            // -------------------------------------------------
+            // Dimming
+            // -------------------------------------------------
+            printf("  DIMMING : %u\r\n",
+                event->dimming);
+        }
+
+        printf("\r\n----------------------------------------\r\n");
+        printf("crc      : 0x%04X\r\n", Effects.crc);
+        printf("========================================\r\n\r\n");
+
+    #endif
 
         return 0;
     }

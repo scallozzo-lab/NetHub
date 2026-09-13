@@ -5,7 +5,7 @@
 #include "_ltproto.h"
 #include <string.h>
 
-static uint8_t dmx[4] = {0}, dmxold[4] = {0};
+static uint8_t dmx[_DMX512_LEN] = {0}, dmxold[_DMX512_LEN] = {0};
 static uint8_t MdxSeq = 0;
 static stCurrentMode _RGBCurrentMode = {0};
 
@@ -36,55 +36,94 @@ void _SetCalendarEvent(stCalendarEvent *pst)
         memcpy(p_stnv->CalendarEvent, pst, sizeof(p_stnv->CalendarEvent));
         _NVEffectsWrite();
     }
+
 #ifdef _USE_DEBUG_CALENDAR_DATA
 
     printf("\r\n[_SetCalendarEvent] Calendar Events\r\n");
 
     for (uint8_t i = 0; i < _MAXEFFECTEVENTS; i++)
     {
-        printf(
-            "[%u] EN:%u "
-            "START:%02u:%02u "
-            "END:%02u:%02u "
-            "DAYS:0x%02X "
-            "ACT:%u "
-            "G1:(%u,%u,%u) "
-            "G2:(%u,%u,%u) "
-            "G3:(%u,%u,%u) "
-            "DIM:%u\r\n",
+        printf("\r\nEVENT [%u]\r\n", i);
 
-            i,
-            p_stnv->CalendarEvent[i].enabled,
+        // -----------------------------------------------------
+        // Estado y horarios
+        // -----------------------------------------------------
+        printf("  EN      : %u\r\n",
+            p_stnv->CalendarEvent[i].enabled);
 
+        printf("  T1      : %02u:%02u -> %02u:%02u\r\n",
             p_stnv->CalendarEvent[i].start_hour,
             p_stnv->CalendarEvent[i].start_minute,
-
             p_stnv->CalendarEvent[i].end_hour,
-            p_stnv->CalendarEvent[i].end_minute,
+            p_stnv->CalendarEvent[i].end_minute);
 
-            p_stnv->CalendarEvent[i].days_mask,
-            p_stnv->CalendarEvent[i].action,
+        printf("  EN T2   : %u\r\n",
+            p_stnv->CalendarEvent[i].enabled_t2);
 
+        printf("  T2      : %02u:%02u -> %02u:%02u\r\n",
+            p_stnv->CalendarEvent[i].start_hour_t2,
+            p_stnv->CalendarEvent[i].start_minute_t2,
+            p_stnv->CalendarEvent[i].end_hour_t2,
+            p_stnv->CalendarEvent[i].end_minute_t2);
+
+        // -----------------------------------------------------
+        // Configuración
+        // -----------------------------------------------------
+        printf("  DAYS    : 0x%02X\r\n",
+            p_stnv->CalendarEvent[i].days_mask);
+
+        printf("  ACTION  : %u\r\n",
+            p_stnv->CalendarEvent[i].action);
+
+        // -----------------------------------------------------
+        // RGBW
+        // -----------------------------------------------------
+        printf("  G1 RGBW : %3u %3u %3u %3u\r\n",
             p_stnv->CalendarEvent[i].r_g1,
             p_stnv->CalendarEvent[i].g_g1,
             p_stnv->CalendarEvent[i].b_g1,
+            p_stnv->CalendarEvent[i].w_g1);
 
+        printf("  G2 RGBW : %3u %3u %3u %3u\r\n",
             p_stnv->CalendarEvent[i].r_g2,
             p_stnv->CalendarEvent[i].g_g2,
             p_stnv->CalendarEvent[i].b_g2,
+            p_stnv->CalendarEvent[i].w_g2);
 
+        printf("  G3 RGBW : %3u %3u %3u %3u\r\n",
             p_stnv->CalendarEvent[i].r_g3,
             p_stnv->CalendarEvent[i].g_g3,
             p_stnv->CalendarEvent[i].b_g3,
+            p_stnv->CalendarEvent[i].w_g3);
 
-            p_stnv->CalendarEvent[i].dimming
-        );
+        printf("  G4 RGBW : %3u %3u %3u %3u\r\n",
+            p_stnv->CalendarEvent[i].r_g4,
+            p_stnv->CalendarEvent[i].g_g4,
+            p_stnv->CalendarEvent[i].b_g4,
+            p_stnv->CalendarEvent[i].w_g4);
+
+        // -----------------------------------------------------
+        // Reflectores
+        // -----------------------------------------------------
+        printf("  REF1    : EN:%u ON:%u\r\n",
+            p_stnv->CalendarEvent[i].reflector1_enable,
+            p_stnv->CalendarEvent[i].reflector1_on);
+
+        printf("  REF2    : EN:%u ON:%u\r\n",
+            p_stnv->CalendarEvent[i].reflector2_enable,
+            p_stnv->CalendarEvent[i].reflector2_on);
+
+        // -----------------------------------------------------
+        // Dimming
+        // -----------------------------------------------------
+        printf("  DIMMING : %u\r\n",
+            p_stnv->CalendarEvent[i].dimming);
     }
 
     printf("\r\n");
 
 #endif
-}
+ }
 
 void _SetRGBCurrentMode(uint8_t *st)
 {
@@ -147,7 +186,7 @@ void _SetMDXSeq(uint8_t s)
 
 void _ProcLEDEffect(void)
 {
-    uint8_t value;
+    //uint8_t value;
     static uint16_t framecount = 0;
 
     switch (ledEffect)
@@ -164,7 +203,7 @@ void _ProcLEDEffect(void)
             dmx[0] = _RGBCurrentMode.rgbg1_r;
             dmx[1] = _RGBCurrentMode.rgbg1_g;
             dmx[2] = _RGBCurrentMode.rgbg1_b;
-            dmx[3] = 0;
+            dmx[3] = _RGBCurrentMode.rgbg1_w;
         break;
 
         case LED_EFFECT_FADE_IN:
@@ -366,7 +405,7 @@ void _ProcLEDEffect(void)
     }
 
     // Si el contenido cambió o pasaron mas de N segundos, lo envía a la controladora
-    if(memcmp(dmx, dmxold, 3) || (framecount++ >= 1000) )
+    if(memcmp(dmx, dmxold, sizeof(dmx)) || (framecount++ >= 1000) )
     {
         memcpy(dmxold, dmx, sizeof(dmxold));
         DMX_SendFrame(0, dmx, sizeof(dmx));

@@ -38,7 +38,7 @@
 //#define _DEBUG_RF
 #define _USE_DEBUG_FWUPDATE
 #define _USE_DEBUG_SRTC
-//#define _USE_DEBUG_CALENDAR_DATA
+#define _USE_DEBUG_CALENDAR_DATA
 
 
 //#define _CLKMODE_EXTERNAL_8MHZ

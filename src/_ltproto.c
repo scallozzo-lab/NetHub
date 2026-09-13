@@ -348,26 +348,55 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                             RxLTMdxCfg->CalendarList[i].end_hour,
                             RxLTMdxCfg->CalendarList[i].end_minute);
 
+                        printf("  enabled_t2   = (%d)\n",
+                            RxLTMdxCfg->CalendarList[i].enabled_t2);
+
+                        printf("  start_t2     = %02d:%02d\n",
+                            RxLTMdxCfg->CalendarList[i].start_hour_t2,
+                            RxLTMdxCfg->CalendarList[i].start_minute_t2);
+
+                        printf("  end_t2       = %02d:%02d\n",
+                            RxLTMdxCfg->CalendarList[i].end_hour_t2,
+                            RxLTMdxCfg->CalendarList[i].end_minute_t2);
+
+                            
                         printf("  days_mask = %02X\n",
                             RxLTMdxCfg->CalendarList[i].days_mask);
 
                         printf("  action    = (%d)\n",
                             RxLTMdxCfg->CalendarList[i].action);
 
-                        printf("  RGB G1    = (%d, %d, %d)\n",
+                        printf("  RGB G1    = (%d, %d, %d, %d)\n",
                             RxLTMdxCfg->CalendarList[i].r_g1,
                             RxLTMdxCfg->CalendarList[i].g_g1,
-                            RxLTMdxCfg->CalendarList[i].b_g1);
+                            RxLTMdxCfg->CalendarList[i].b_g1,
+                            RxLTMdxCfg->CalendarList[i].w_g1);
 
-                        printf("  RGB G2    = (%d, %d, %d)\n",
+                        printf("  RGB G2    = (%d, %d, %d, %d)\n",
                             RxLTMdxCfg->CalendarList[i].r_g2,
                             RxLTMdxCfg->CalendarList[i].g_g2,
-                            RxLTMdxCfg->CalendarList[i].b_g2);
+                            RxLTMdxCfg->CalendarList[i].b_g2,
+                            RxLTMdxCfg->CalendarList[i].w_g2);
 
-                        printf("  RGB G3    = (%d, %d, %d)\n",
+                        printf("  RGB G3    = (%d, %d, %d, %d)\n",
                             RxLTMdxCfg->CalendarList[i].r_g3,
                             RxLTMdxCfg->CalendarList[i].g_g3,
-                            RxLTMdxCfg->CalendarList[i].b_g3);
+                            RxLTMdxCfg->CalendarList[i].b_g3,
+                            RxLTMdxCfg->CalendarList[i].w_g3);
+
+                        printf("  RGB G4    = (%d, %d, %d, %d)\n",
+                            RxLTMdxCfg->CalendarList[i].r_g4,
+                            RxLTMdxCfg->CalendarList[i].g_g4,
+                            RxLTMdxCfg->CalendarList[i].b_g4,
+                            RxLTMdxCfg->CalendarList[i].w_g4);
+
+                        printf(" Reflector1 = (%d, %d)\n", 
+                            RxLTMdxCfg->CalendarList[i].reflector1_enable, 
+                            RxLTMdxCfg->CalendarList[i].reflector1_on);
+
+                        printf(" Reflector2 = (%d, %d)\n", 
+                            RxLTMdxCfg->CalendarList[i].reflector2_enable, 
+                            RxLTMdxCfg->CalendarList[i].reflector2_on);
 
                         printf("  dimming   = (%d)\n",
                             RxLTMdxCfg->CalendarList[i].dimming);
