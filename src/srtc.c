@@ -162,8 +162,8 @@ uint8_t RTC_GetWeekDay(const rtc_soft_t *rtc)
     if (rtc->month < 3)
         y--;
 
-    return (y + y / 4 - y / 100 + y / 400 +
-            t[rtc->month - 1] + rtc->day) % 7;
+    return ((y + y / 4 - y / 100 + y / 400 +
+         t[rtc->month - 1] + rtc->day) % 7) + 1;
 }
 
 uint32_t RTC_Pack(const rtc_soft_t *rtc)

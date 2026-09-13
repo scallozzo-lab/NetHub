@@ -192,11 +192,7 @@ void _ProcLEDEffect(void)
     switch (ledEffect)
     {
         case LED_EFFECT_OFF:
-
-            dmx[0] = 0;
-            dmx[1] = 0;
-            dmx[2] = 0;
-            dmx[3] = 0;
+            memset(dmx, 0,sizeof(dmx));
             break;
 
         case LED_EFFECT_FIXED:
@@ -204,6 +200,22 @@ void _ProcLEDEffect(void)
             dmx[1] = _RGBCurrentMode.rgbg1_g;
             dmx[2] = _RGBCurrentMode.rgbg1_b;
             dmx[3] = _RGBCurrentMode.rgbg1_w;
+        
+            dmx[4] = _RGBCurrentMode.rgbg2_r;
+            dmx[5] = _RGBCurrentMode.rgbg2_g;
+            dmx[6] = _RGBCurrentMode.rgbg2_b;
+            dmx[7] = _RGBCurrentMode.rgbg2_w;
+        
+            dmx[8] = _RGBCurrentMode.rgbg3_r;
+            dmx[9] = _RGBCurrentMode.rgbg3_g;
+            dmx[10] = _RGBCurrentMode.rgbg3_b;
+            dmx[11] = _RGBCurrentMode.rgbg3_w;
+        
+            dmx[12] = _RGBCurrentMode.rgbg4_r;
+            dmx[13] = _RGBCurrentMode.rgbg4_g;
+            dmx[14] = _RGBCurrentMode.rgbg4_b;
+            dmx[15] = _RGBCurrentMode.rgbg4_w;
+        
         break;
 
         case LED_EFFECT_FADE_IN:
@@ -248,7 +260,58 @@ void _ProcLEDEffect(void)
                 ((uint32_t)_RGBCurrentMode.rgbg1_b * fade) / 255UL
             );
 
-            dmx[3] = 0;
+            dmx[3] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_w * fade) / 255UL
+            );
+
+             dmx[4] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_r * fade) / 255UL
+            );
+
+            dmx[5] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_g * fade) / 255UL
+            );
+
+            dmx[6] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_b * fade) / 255UL
+            );
+
+            dmx[7] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_w * fade) / 255UL
+            );
+
+            dmx[8] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_r * fade) / 255UL
+            );
+
+            dmx[9] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_g * fade) / 255UL
+            );
+
+            dmx[10] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_b * fade) / 255UL
+            );
+
+            dmx[11] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_w * fade) / 255UL
+            );
+
+            dmx[12] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_r * fade) / 255UL
+            );
+
+            dmx[13] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_g * fade) / 255UL
+            );
+
+            dmx[14] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_b * fade) / 255UL
+            );
+
+            dmx[15] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_w * fade) / 255UL
+            );
+
 
             break;
         }
@@ -289,7 +352,58 @@ void _ProcLEDEffect(void)
                 ((uint32_t)_RGBCurrentMode.rgbg1_b * fade) / 255UL
             );
 
-            dmx[3] = 0;
+            dmx[3] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg1_w * fade) / 255UL
+            );
+
+             dmx[4] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_r * fade) / 255UL
+            );
+
+            dmx[5] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_g * fade) / 255UL
+            );
+
+            dmx[6] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_b * fade) / 255UL
+            );
+
+            dmx[7] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg2_w * fade) / 255UL
+            );
+
+            dmx[8] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_r * fade) / 255UL
+            );
+
+            dmx[9] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_g * fade) / 255UL
+            );
+
+            dmx[10] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_b * fade) / 255UL
+            );
+
+            dmx[11] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg3_w * fade) / 255UL
+            );
+
+            dmx[12] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_r * fade) / 255UL
+            );
+
+            dmx[13] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_g * fade) / 255UL
+            );
+
+            dmx[14] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_b * fade) / 255UL
+            );
+
+            dmx[15] = (uint8_t)(
+                ((uint32_t)_RGBCurrentMode.rgbg4_w * fade) / 255UL
+            );
+
 
             if (effectCounter < effectDuration_FO)
             {
@@ -386,7 +500,57 @@ void _ProcLEDEffect(void)
             ((uint32_t)_RGBCurrentMode.rgbg1_b * fade) / 255UL
         );
 
-        dmx[3] = 0;
+        dmx[3] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg1_w * fade) / 255UL
+        );
+
+            dmx[4] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg2_r * fade) / 255UL
+        );
+
+        dmx[5] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg2_g * fade) / 255UL
+        );
+
+        dmx[6] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg2_b * fade) / 255UL
+        );
+
+        dmx[7] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg2_w * fade) / 255UL
+        );
+
+        dmx[8] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg3_r * fade) / 255UL
+        );
+
+        dmx[9] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg3_g * fade) / 255UL
+        );
+
+        dmx[10] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg3_b * fade) / 255UL
+        );
+
+        dmx[11] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg3_w * fade) / 255UL
+        );
+
+        dmx[12] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg4_r * fade) / 255UL
+        );
+
+        dmx[13] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg4_g * fade) / 255UL
+        );
+
+        dmx[14] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg4_b * fade) / 255UL
+        );
+
+        dmx[15] = (uint8_t)(
+            ((uint32_t)_RGBCurrentMode.rgbg4_w * fade) / 255UL
+        );
 
         /*
         * Avanzamos el efecto.
@@ -427,7 +591,9 @@ void _ProcModeAuto(rtc_soft_t *rtc)
 
     // Si estamos en modo automático
     if (p_stnv->mode == _RGB_MODE_AUTO)
-    {
+    { 
+        printf("modo auto\n");
+        
         uint16_t now_min =
             ((uint16_t)rtc->hour * 60U) + rtc->min;
 
@@ -446,13 +612,19 @@ void _ProcModeAuto(rtc_soft_t *rtc)
             */
             uint8_t day_bit = (1U << (RTC_GetWeekDay(rtc) - 1));
 
+            printf("day_bit %02X - mask day %02X getweek %d\n", day_bit, ev->days_mask, RTC_GetWeekDay(rtc));
+    
+
             //printf("day = %d, bit %02X\n", RTC_GetWeekDay(rtc), day_bit);
 
             if ((ev->days_mask & day_bit) == 0)
             {
                 continue;
             }
-            
+    
+            printf("dia valido\n");
+    
+
             uint16_t start_min =
                 ((uint16_t)ev->start_hour * 60U) +
                 ev->start_minute;
