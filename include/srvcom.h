@@ -42,7 +42,7 @@
 #define _CANTMAX_RETRY_NOREG    15
 #define _CATNMAX_TIMER_RESTARTCOMM  30000
 
-
+#define _AT_RESET       "AT+CRESET"                                    // 
 #define _AT_READY_1     "*ATREADY:1"                                    // UCC de inicio
 #define _AT_CPIN        "AT+CPIN?"                                      // Rx-> +CPIN: READY
 #define _AT_SETAPN      "AT+CGDCONT=1,\"IP\",\"igprs.claro.com.ar\""    // Rx-> OK

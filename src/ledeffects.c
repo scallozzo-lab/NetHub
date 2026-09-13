@@ -504,7 +504,7 @@ void _ProcLEDEffect(void)
             ((uint32_t)_RGBCurrentMode.rgbg1_w * fade) / 255UL
         );
 
-            dmx[4] = (uint8_t)(
+        dmx[4] = (uint8_t)(
             ((uint32_t)_RGBCurrentMode.rgbg2_r * fade) / 255UL
         );
 

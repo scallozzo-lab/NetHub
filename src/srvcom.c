@@ -170,7 +170,7 @@ char *remove_spaces(char *str, uint16_t len) {
 void _InitCom(void)
 {
     _SIM7670_POWER_OFF;
-    DelayUs(100000lu);
+    DelayUs(200000lu);
     _SIM7670_POWER_ON;
     DelayUs(1000000lu);
 }
@@ -832,6 +832,7 @@ void _ProcSrvCom(void)
                 printf("MODEM RESTART Timeout...\n");
                 gralrx = 0;
                 _InitSrvCom(1);
+                _TxATCom(_AT_RESET);
                 break;
             }
 
