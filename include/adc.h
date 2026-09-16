@@ -4,6 +4,7 @@
 #include "main.h"
 
 #define ADC_AVG_SIZE 16 // Para filtros
+#define _TEST_ADC
 
 typedef struct
 {

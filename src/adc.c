@@ -1,10 +1,16 @@
 #include "adc.h"
+#include "main.h"
 
 static uint16_t prev1 = 0;
 static uint16_t prev2 = 0;
 static adc_iir_t iir;
 
+static inline void IWDG_Refresh(void)
+{
+    IWDG->KR = 0xAAAA;   // clave para recargar el contador
+}
 
+/*
 // Inicializa ADC1 en un canal específico (PA0–PA7, PB0–PB1)
 void ADC1_Init(uint8_t channel)
 {
@@ -26,6 +32,43 @@ void ADC1_Init(uint8_t channel)
 
     ADC1->CR2 = ADC_CR2_ADON;   // encender ADC
 }
+*/
+// Inicializa ADC1 en un canal específico (PA0–PA7, PB0–PB1)
+void ADC1_Init(uint8_t channel)
+{
+    // Habilitar reloj ADC1 y GPIO
+    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN | RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN;
+
+    // Configurar pin como analógico
+    if(channel <= 7)       GPIOA->CRL &= ~(0xF << (4*channel));
+    else if(channel <= 9)  GPIOB->CRL &= ~(0xF << (4*(channel-8)));
+
+    // ADC clock = PCLK2 / 6 → 12 MHz < 14 MHz
+    RCC->CFGR &= ~RCC_CFGR_ADCPRE;
+    RCC->CFGR |= RCC_CFGR_ADCPRE_DIV6;
+
+    ADC1->CR2 &= ~ADC_CR2_ADON;          // apagar ADC
+    
+    // Configurar ADC
+    ADC1->SQR1 = 0;             // 1 conversión
+    ADC1->SQR3 = channel;       // primer canal de la secuencia
+    ADC1->SMPR2 |= (0x7 << (3*channel)); // tiempo máximo de sample
+
+    //ADC1->CR2 &= ~ADC_CR2_ADON;          // apagar ADC
+    //ADC1->SMPR2 &= ~(0x7 << (3*channel));
+    //ADC1->SMPR2 |=  (0x7 << (3*channel)); 
+   
+    // Configurar tiempo de muestreo máximo
+    //ADC1->SMPR2 &= ~(0x7 << (3*channel));  // limpiar bits
+    //ADC1->SMPR2 |=  (0x7 << (3*channel));  // máximo sample time (~239 ciclos)
+
+    ADC1->CR2 = ADC_CR2_ADON;   // encender ADC
+
+    ADC1->CR2 |= ADC_CR2_CAL;           // iniciar calibración
+    while(ADC1->CR2 & ADC_CR2_CAL);     // esperar a que termine
+}
+
+
 
 void ADC1_Init_Temperature(void)
 {
@@ -213,28 +256,174 @@ uint16_t adc_filter_process(uint16_t raw)
     return adc_iir_filter(&iir, med);
 }
 
+#ifdef _TEST_ADC
+
+#include <stdint.h>
+#include <stdio.h>
+#include <math.h>
+
+#define ADC_SAMPLES             100UL
+
+#define CPU_FREQ_HZ             72000000UL
+
+#define ADC_SAMPLE_US           1000UL
+#define ADC_SAMPLE_CYCLES       ((CPU_FREQ_HZ / 1000000UL) * ADC_SAMPLE_US)
+
+#define ADC_VDDA_MV             3260UL
+
+// Sensibilidad efectiva medida del conjunto
+// ACS712 + divisor 4k7/10k
+#define ACS712_MV_PER_AMP       185UL
+
+// Filtro IIR de salida
+// 2 = rápido
+// 4 = medio
+// 8 = suave
+// 16 = muy suave
+#define CURRENT_FILTER_DIV      16
+
+
+static inline void ADC_WaitNextSample(uint32_t *next)
+{
+    *next += ADC_SAMPLE_CYCLES;
+
+    while((int32_t)(DWT->CYCCNT - *next) < 0)
+    {
+        IWDG_Refresh();
+    }
+}
+
 
 void test_adc(void)
 {
     static uint8_t flaginit = 0;
+
+    static uint8_t filter_init = 0;
+    static int32_t current_filtered_ma = 0;
+
     if(!flaginit)
-        adc_filter_init(0);
-    flaginit = 1;
+    {
+        ADC1_Init(ADC_CH_PA1);
+        flaginit = 1;
+    }
 
-    //printf("Temp %lu\n", ADC1_ReadTemperature());
-    
-    int16_t t = ADC1_ReadTemperature();
+    while(1)
+    {
+        uint64_t sum    = 0;
+        uint64_t sum_sq = 0;
 
-    printf("Temp: %d.%d C\n", t / 10, abs(t % 10));
-    //uint16_t val1 = ADC1_Read();
-    //uint32_t mv = val1 * 3300 / 4095; // milivoltios
-    //printf("adc1 = %lu mV\n", mv);
+        uint32_t mv_min = ADC_VDDA_MV;
+        uint32_t mv_max = 0;
 
-    uint16_t val2 = ADC2_Read();
-    uint32_t mv2 = val2 * 3300 / 4095; // milivoltios
-    printf("adc2 = %lu mV\n", mv2);
+        uint32_t next = DWT->CYCCNT;
 
-    uint16_t filtrado = adc_filter_process(val2);
-    printf("adc2 Filtro= %lu mV\n", filtrado);
 
+        // =====================================================
+        // Captura: 1000 muestras @ 1kHz = 1 segundo
+        // =====================================================
+
+        for(uint32_t i = 0; i < ADC_SAMPLES; i++)
+        {
+            uint16_t adc = ADC1_Read();
+
+            uint32_t mv =
+                ((uint32_t)adc * ADC_VDDA_MV) / 4095UL;
+
+            sum += mv;
+
+            sum_sq +=
+                (uint64_t)mv * (uint64_t)mv;
+
+            if(mv < mv_min)
+                mv_min = mv;
+
+            if(mv > mv_max)
+                mv_max = mv;
+
+            ADC_WaitNextSample(&next);
+        }
+
+
+        // =====================================================
+        // Offset
+        // =====================================================
+
+        uint32_t offset_mv =
+            (uint32_t)(sum / ADC_SAMPLES);
+
+
+        // =====================================================
+        // True RMS de la componente AC
+        // =====================================================
+
+        uint64_t mean_sq =
+            sum_sq / ADC_SAMPLES;
+
+        uint64_t offset_sq =
+            (uint64_t)offset_mv *
+            (uint64_t)offset_mv;
+
+        uint32_t vrms_mv = 0;
+
+        if(mean_sq > offset_sq)
+        {
+            uint64_t ac_mean_sq =
+                mean_sq - offset_sq;
+
+            vrms_mv =
+                (uint32_t)sqrt((double)ac_mean_sq);
+        }
+
+
+        // =====================================================
+        // Conversión a corriente
+        // =====================================================
+
+        uint32_t current_ma =
+            (vrms_mv * 1000UL) /
+            ACS712_MV_PER_AMP;
+
+
+        // =====================================================
+        // Filtro IIR sobre el resultado RMS
+        // =====================================================
+
+        if(!filter_init)
+        {
+            current_filtered_ma = current_ma;
+            filter_init = 1;
+        }
+        else
+        {
+            current_filtered_ma +=
+                ((int32_t)current_ma -
+                 current_filtered_ma) /
+                CURRENT_FILTER_DIV;
+        }
+
+
+        // =====================================================
+        // Debug
+        // =====================================================
+
+        printf(
+            "ADC RMS: "
+            "min=%lu mV  "
+            "max=%lu mV  "
+            "offset=%lu mV  "
+            "Vrms=%lu mV  "
+            "I=%lu mA  "
+            "Ifilt=%ld mA\r\n",
+
+            (unsigned long)mv_min,
+            (unsigned long)mv_max,
+            (unsigned long)offset_mv,
+            (unsigned long)vrms_mv,
+            (unsigned long)current_ma,
+            (long)current_filtered_ma
+        );
+
+        IWDG_Refresh();
+    }
 }
+#endif

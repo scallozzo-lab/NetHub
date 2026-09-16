@@ -484,6 +484,11 @@ int main(void)
     ADC2_Init(ADC_CH_PB0);  // sensor LDR
     IWDG_Refresh();
 
+#ifdef _TEST_ADC
+    test_adc();
+#endif
+
+
     printf("get_sysclk_source = %d\n", get_sysclk_source());
     uint32_t clk = get_sysclk_freq();
     char buf[50];
