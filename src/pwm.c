@@ -1,9 +1,15 @@
 #include "main.h"
 #include "pwm.h"
 
+
+//_SetPWM_CH4(0xffffffflu);
+    //_SetPWM_CH4(0x0lu);
+
+
 void _Init_PWM(uint32_t sysclk, uint32_t DutyCH1, uint32_t DutyCH4)
 {
-    //RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;   // Enable GPIOA clock
+
+    //RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;   // Enable GPIOA clock    
     RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;   // Enable TIM1 clock
 
     // PA8 (TIM1_CH1)

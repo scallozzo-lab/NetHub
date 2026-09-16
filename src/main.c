@@ -431,7 +431,7 @@ int main(void)
 #else
     #pragma message("USING INTERNAL CLOCK SRC 8MHZ")
 #endif
-    
+
     IWDG_Enable(255, 1000);
 
     // WireOne se debe inicializar siempre para poder utilizar los leds con otros propositos.
@@ -449,9 +449,12 @@ int main(void)
     SysTick_Init(get_sysclk_freq());
 #endif
 
+ms_delay(700);
+
 #ifdef _USE_SI2C
     SI2C_GPIO_Init();
- #ifdef _USE_SH1106
+ ms_delay(200);
+#ifdef _USE_SH1106
     _SelLCD1();
     SH1106_init();
     _SelLCD2();
@@ -488,7 +491,6 @@ int main(void)
     test_adc();
 #endif
 
-
     printf("get_sysclk_source = %d\n", get_sysclk_source());
     uint32_t clk = get_sysclk_freq();
     char buf[50];
@@ -499,6 +501,15 @@ int main(void)
     _Init_PWM(clk/1000000, 0,0);
     _SIM7670_POWER_OFF;
     
+    //while(1);
+    //_SetPWM_CH4(0xffffffflu);
+    //_SetPWM_CH4(0x0lu);
+#ifdef _USE_DMX512
+    _SET_OFF_RELE_K1;
+    _SET_OFF_RELE_K2;
+#endif
+
+
     read_option_bytes();
     //write_optionbytes();
 
@@ -610,7 +621,9 @@ Reinit:
 #endif
 
     // Ambos canales apagados
-    _SetPWM_CH4(0xffffffflu);
+    //_SetPWM_CH4(0xffffffflu);
+    //_SetPWM_CH4(0x0lu);
+
 
     _InitSrvCom(1);
     _InitLTProtocol();

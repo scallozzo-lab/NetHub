@@ -269,10 +269,10 @@ uint16_t adc_filter_process(uint16_t raw)
 #define ADC_SAMPLE_US           1000UL
 #define ADC_SAMPLE_CYCLES       ((CPU_FREQ_HZ / 1000000UL) * ADC_SAMPLE_US)
 
-#define ADC_VDDA_MV             3260UL
+#define ADC_VDDA_MV             3300UL
 
 // Sensibilidad efectiva medida del conjunto
-// ACS712 + divisor 4k7/10k
+// ACS712
 #define ACS712_MV_PER_AMP       185UL
 
 // Filtro IIR de salida

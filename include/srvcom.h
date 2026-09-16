@@ -5,8 +5,10 @@
 #include "pwm.h"
 #include "usart.h"
 
-#define _SIM7670_POWER_ON  _SetPWM_CH1(0lu)
-#define _SIM7670_POWER_OFF _SetPWM_CH1(0xfffffffflu)
+//#define _SIM7670_POWER_ON  _SetPWM_CH1(0lu)
+//#define _SIM7670_POWER_OFF _SetPWM_CH1(0xfffffffflu)
+#define _SIM7670_POWER_ON 
+#define _SIM7670_POWER_OFF 
 
            
 
