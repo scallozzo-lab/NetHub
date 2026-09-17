@@ -193,6 +193,8 @@ void _ProcLEDEffect(void)
     {
         case LED_EFFECT_OFF:
             memset(dmx, 0,sizeof(dmx));
+            _SET_OFF_RELE_K1;
+            _SET_OFF_RELE_K2;
             break;
 
         case LED_EFFECT_FIXED:
@@ -216,6 +218,21 @@ void _ProcLEDEffect(void)
             dmx[14] = _RGBCurrentMode.rgbg4_b;
             dmx[15] = _RGBCurrentMode.rgbg4_w;
         
+            if(_RGBCurrentMode.reflector1_enable)
+            {
+                if(_RGBCurrentMode.reflector1_on)
+                    _SET_ON_RELE_K1;
+                else 
+                 _SET_OFF_RELE_K1;
+            }
+            if(_RGBCurrentMode.reflector2_enable)
+            {
+                if(_RGBCurrentMode.reflector2_on)
+                    _SET_ON_RELE_K2;
+                else 
+                 _SET_OFF_RELE_K2;
+            }
+     
         break;
 
         case LED_EFFECT_FADE_IN:
@@ -232,6 +249,24 @@ void _ProcLEDEffect(void)
             if (effectCounter < effectDuration_FI)
             {
                 effectCounter++;
+            }
+            // Sino si terminó el efecto fade-in enciende los reflectores
+            else
+            {
+                if(_RGBCurrentMode.reflector1_enable)
+                {
+                    if(_RGBCurrentMode.reflector1_on)
+                        _SET_ON_RELE_K1;
+                    else 
+                    _SET_OFF_RELE_K1;
+                }
+                if(_RGBCurrentMode.reflector2_enable)
+                {
+                    if(_RGBCurrentMode.reflector2_on)
+                        _SET_ON_RELE_K2;
+                    else 
+                    _SET_OFF_RELE_K2;
+                }
             }
 
             fade = (uint8_t)(
@@ -408,8 +443,22 @@ void _ProcLEDEffect(void)
             if (effectCounter < effectDuration_FO)
             {
                 effectCounter++;
+                
+                if(_RGBCurrentMode.reflector1_enable)
+                {
+                    if(_RGBCurrentMode.reflector1_on)
+                        _SET_ON_RELE_K1;
+                    else 
+                    _SET_OFF_RELE_K1;
+                }
+                if(_RGBCurrentMode.reflector2_enable)
+                {
+                    if(_RGBCurrentMode.reflector2_on)
+                        _SET_ON_RELE_K2;
+                    else 
+                    _SET_OFF_RELE_K2;
+                }
             }
-
             break;
         }
    
@@ -469,6 +518,21 @@ void _ProcLEDEffect(void)
                 ((uint32_t)effectCounter * 255UL) /
                 effectDuration
             );
+        
+            if(_RGBCurrentMode.reflector1_enable)
+            {
+                if(_RGBCurrentMode.reflector1_on)
+                    _SET_ON_RELE_K1;
+                else 
+                _SET_OFF_RELE_K1;
+            }
+            if(_RGBCurrentMode.reflector2_enable)
+            {
+                if(_RGBCurrentMode.reflector2_on)
+                    _SET_ON_RELE_K2;
+                else 
+                _SET_OFF_RELE_K2;
+            }
         }
         else
         {
@@ -898,7 +962,12 @@ void _ProcModeAuto(rtc_soft_t *rtc)
             st.rgbg4_b = ev->b_g4;
             st.rgbg4_w = ev->w_g4;
 
-
+            // Reflectores
+            st.reflector1_enable = ev->reflector1_enable;
+            st.reflector1_on = ev->reflector1_on;
+            st.reflector2_enable = ev->reflector2_enable;
+            st.reflector2_on = ev->reflector2_on;
+  
             // -------------------------------------------------
             // Aplicar efecto
             // -------------------------------------------------
