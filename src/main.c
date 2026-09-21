@@ -87,6 +87,8 @@
 #include "fw_version.h"
 #include "fwupdate.h"
 #include "srtc.h"
+#include "_config.h"
+#include "_netcontrol.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -413,6 +415,9 @@ void _10msFunctions(void)
         _1SecFunctions();
 
     //LedMonitor();
+#ifdef _USE_DMX512    
+    ProcNetValues();
+#endif
 
         xDiv = 0;
     }
@@ -487,9 +492,6 @@ ms_delay(700);
     ADC2_Init(ADC_CH_PB0);  // sensor LDR
     IWDG_Refresh();
 
-#ifdef _TEST_ADC
-    test_adc();
-#endif
 
     printf("get_sysclk_source = %d\n", get_sysclk_source());
     uint32_t clk = get_sysclk_freq();
@@ -500,7 +502,12 @@ ms_delay(700);
     // Init PWM for CH1 & CH4 (PWM de Luminarias)
     _Init_PWM(clk/1000000, 0,0);
     _SIM7670_POWER_OFF;
-    
+
+#ifdef _TEST_ADC
+    test_adc();
+#endif
+
+
     //while(1);
     //_SetPWM_CH4(0xffffffflu);
     //_SetPWM_CH4(0x0lu);
@@ -508,7 +515,6 @@ ms_delay(700);
     _SET_OFF_RELE_K1;
     _SET_OFF_RELE_K2;
 #endif
-
 
     read_option_bytes();
     //write_optionbytes();

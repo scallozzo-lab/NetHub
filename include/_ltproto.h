@@ -86,7 +86,7 @@ typedef enum
 {
     HUB_STS_GNSS_RDY            = BIT0,
     HUB_STS_DTIME_SYNCRO_OK     = BIT1,
-    HUB_STS_res2                = BIT2,
+    HUB_STS_DTIME_FROMGNSS      = BIT2,
     HUB_STS_res3                = BIT3,
     HUB_STS_res4                = BIT4,
     HUB_STS_res5                = BIT5,
@@ -146,6 +146,25 @@ typedef enum
     LTDATA_STS_ST2OK    = BIT1,
 }estatusrxdata;
 
+typedef union __attribute__((packed))
+{
+    struct
+    {
+        int32_t latitude_e7;
+        int32_t longitude_e7;
+    } gps;
+
+    struct
+    {
+        uint16_t netvoltage;
+        uint32_t netcurrent;
+        uint16_t nu;
+    } netvalues;
+
+    uint8_t raw[8];
+
+} stHubExtraData;
+
 // Estructuras para hub-status
 typedef struct __attribute__((packed))
 {
@@ -158,9 +177,11 @@ typedef struct __attribute__((packed))
     uint8_t HubErrsts;
     uint8_t HubEvent;   // <> 0 = Event
     uint32_t TimeRunning;
-    
-    int32_t latitude_e7;
-    int32_t longitude_e7;
+   
+    stHubExtraData extra;      // exactamente 8 bytes
+
+    //int32_t latitude_e7;
+    //int32_t longitude_e7;
     rtc_soft_t rtc;
     uint8_t dmxseq;
 

@@ -4,6 +4,7 @@
 #include "fw_version.h"
 #include "fwupdate.h"
 #include "_gnss.h"
+#include "_netcontrol.h"
 #include <string.h>
 
 stLTProtocol LTProtocol = {0};
@@ -241,10 +242,11 @@ void _ProcRxLT(uint8_t *xbuff, uint16_t *len)
                             _SetRGBMode(_RGB_MODE_AUTO);    
                     } 
                     
-                    // Si Aun no tenemos fecha y hora sincronizada
-                    if(!(_GetHubStatus() & HUB_STS_DTIME_SYNCRO_OK))
+                    // Si Aun no tenemos fecha y hora sincronizada desde GPS
+                    if(!(_GetHubStatus() & HUB_STS_DTIME_FROMGNSS))
                     {
                         _SetsRTC(RxLTHubStatus->rtc);
+                        _SetHubStatus(HUB_STS_DTIME_SYNCRO_OK);
                     }
                 }
                 break;
@@ -526,11 +528,24 @@ void _ProcLTProto(void)
                 memcpy(TxLTHubStatus.HubID, _GetHubID(), sizeof(TxLTHubStatus.HubID));
                 TxLTHubStatus.HubStatus = LTProtocol.HubStatus;
                 TxLTHubStatus.HubErrsts = 0;
-                TxLTHubStatus.HubEvent = 0;
+                
+                // Si la secuencia es impar, transmite geoposición
+                if(TxLTHubStatus.Seq & 1)
+                    TxLTHubStatus.HubEvent = 0;
+                else TxLTHubStatus.HubEvent = 1;
+                
                 TxLTHubStatus.TimeRunning = _GetTimeRunning();
                 
-                TxLTHubStatus.latitude_e7 = _GetGNSS()->latitude_e7;
-                TxLTHubStatus.longitude_e7 = _GetGNSS()->longitude_e7;
+                if(TxLTHubStatus.HubEvent == 0)
+                {
+                    TxLTHubStatus.extra.gps.latitude_e7 = _GetGNSS()->latitude_e7;
+                    TxLTHubStatus.extra.gps.longitude_e7 = _GetGNSS()->longitude_e7;
+                }
+                else
+                {
+                    TxLTHubStatus.extra.netvalues.netvoltage = _GetNetVoltage();
+                    TxLTHubStatus.extra.netvalues.netcurrent = _GetNetCurrent();    
+                }
                 memcpy(&TxLTHubStatus.rtc, _GetRtcPtr(), sizeof(TxLTHubStatus.rtc));
                 
 #ifdef _USE_DMX512

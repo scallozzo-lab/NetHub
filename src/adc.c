@@ -258,9 +258,11 @@ uint16_t adc_filter_process(uint16_t raw)
 
 #ifdef _TEST_ADC
 
+
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+#include "pwm.h"
 
 #define ADC_SAMPLES             100UL
 
@@ -303,6 +305,8 @@ void test_adc(void)
 
     if(!flaginit)
     {
+        _SET_ON_RELE_K1;
+        _SET_ON_RELE_K2;
         ADC1_Init(ADC_CH_PA1);
         flaginit = 1;
     }

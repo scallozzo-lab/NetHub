@@ -9,13 +9,30 @@ int I2C_writeByte(uint8_t data);
 
 int _eeprom_read(uint8_t dev, uint16_t addr, uint8_t *dat, uint16_t len)
 {
+#ifdef _USE_DUAL_EPROM
+    if(addr >= 0x8000)
+    {
+        addr -= 0x8000;
+        dev = _EEPROM_DEV2_ADDR_;
+    }
+#endif
+    
     return I2C_readRegister16(dev, addr ,len, dat);
 }
 
 int _eeprom_write(uint8_t dev, uint16_t addr, uint8_t *dat, uint16_t len)
 {
     if(len <= _EEPROM_PAGE_SIZE)
+    {      
+#ifdef _USE_DUAL_EPROM
+        if(addr >= 0x8000)
+        {
+            addr -= 0x8000;
+            dev = _EEPROM_DEV2_ADDR_;
+        }
+#endif
         return I2C_writeRegister16(dev, addr, dat, len);
+    }
     return 0;
 }
 

@@ -11,8 +11,8 @@
 #define _NETHUBMODE
 #define _USE_SIMCOM_NOECHO
 
-//#define _SRV_HOST       "srv.luxiva-technology.com.ar"
-#define _SRV_HOST       "app.luxiva-technology.com.ar"      // casa
+#define _SRV_HOST       "srv.luxiva-technology.com.ar"          // plataforma donweb
+//#define _SRV_HOST       "app.luxiva-technology.com.ar"      // casa
 
 #define _SRV_PORT       5000
 //#define _USE_DUMMY_TEST_DEVICE        // Solo para probar, crea un config id de prueba
@@ -27,19 +27,23 @@
 /*--------------------------------------------------------------*/
 
 //#define _USE_DEBUG_SRVCOM
+
 #define _USE_DEBUG_TXRX
+
 //#define _USE_DEBUG_GNSS
 //#define _USE_DEBUG_TX_SRVCOM            
    
 //#define _USE_DEBUG_TXRXSLV
 //#define _USE_DEBUG_RXTIMEOUT
 //#define _USE_DEBUG_TXDONE
+
 #define _USE_DEBUG_NVSTORE
+
 //#define _DEBUG_RF
+
 #define _USE_DEBUG_FWUPDATE
 #define _USE_DEBUG_SRTC
 #define _USE_DEBUG_CALENDAR_DATA
-
 
 //#define _CLKMODE_EXTERNAL_8MHZ
 #define _CLKMODE_EXTERNAL_72MHZ
@@ -57,6 +61,7 @@
     #define _USE_SH1106
     #define FW_TYPE 'H'
     #define _CANT_MAX_SLV   100
+    #define _USE_DUAL_EPROM
     //#define _LORA_MODE_500
 #else
     #define _UART_DEBUG _USART_1

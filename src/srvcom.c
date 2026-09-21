@@ -974,7 +974,7 @@ void _ProcSrvCom(void)
                             _SetsRTC(newrtc);
                             
                             // Date and time sincronized by GNSS
-                            _SetHubStatus(HUB_STS_DTIME_SYNCRO_OK);
+                            _SetHubStatus(HUB_STS_DTIME_SYNCRO_OK + HUB_STS_DTIME_FROMGNSS);
                         
                             lastmin = (_GetGNSS()->time >> 8)  & 0xFF;
                         }
