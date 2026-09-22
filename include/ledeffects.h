@@ -63,7 +63,9 @@ typedef enum
     _RGB_MODE_FADEIN_FADEOUT,
 }ergbmode;  
 
-
+uint8_t _GetTickButtonStg(void);
+uint8_t _GetCurrentPrg(void);
+uint8_t _GetCurrentMode(void);
 void _SetRGBCurrentMode(uint8_t *st);
 uint8_t _GetMDXSeq(void);
 void _SetMDXSeq(uint8_t s);

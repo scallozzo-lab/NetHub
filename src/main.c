@@ -366,6 +366,12 @@ void _ProcMonitorLed(void)
     uint8_t sts = 255;      // default todo el ciclo parapadeando
     uint8_t blinkfreq = 32; // default frecuencia baja
 
+    if(_GetTickButtonStg())
+    {
+        SetLedMonitorGreen(1);
+        return;
+    }
+    
     // Si la comunicación está sincronizada, parpadeo rápido
     if(_GetHubStatus() & HUB_STS_COM_SYNCHRONIZED)
     {
@@ -441,6 +447,7 @@ int main(void)
 
     // WireOne se debe inicializar siempre para poder utilizar los leds con otros propositos.
     _InitWireOne();
+    _InitConfigPin();
 
     Timer2_Init_us(get_sysclk_freq() / 1000000);
 
@@ -458,11 +465,13 @@ ms_delay(700);
 
 #ifdef _USE_SI2C
     SI2C_GPIO_Init();
- ms_delay(200);
+    ms_delay(200);
 #ifdef _USE_SH1106
     _SelLCD1();
+    ms_delay(20);
     SH1106_init();
     _SelLCD2();
+    ms_delay(20);
     SH1106_init();
 #endif
 #endif

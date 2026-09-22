@@ -158,7 +158,8 @@ typedef union __attribute__((packed))
     {
         uint16_t netvoltage;
         uint32_t netcurrent;
-        uint16_t nu;
+        uint8_t mode;
+        uint8_t prognr;
     } netvalues;
 
     uint8_t raw[8];

@@ -8,6 +8,9 @@
 static uint8_t dmx[_DMX512_LEN] = {0}, dmxold[_DMX512_LEN] = {0};
 static uint8_t MdxSeq = 0;
 static stCurrentMode _RGBCurrentMode = {0};
+static uint8_t CurrentPrg = 0, CurrentMode = 0;
+static uint8_t tickbuttonstg = 0;
+    
 
 typedef enum
 {
@@ -26,6 +29,20 @@ static uint16_t effectDuration = 1000; // 100 x 10ms = 1 segundo
 static uint16_t effectDuration_FI = 10000; // 100 x 10ms = 1 segundo
 static uint16_t effectDuration_FO = 10000; // 100 x 10ms = 1 segundo
 
+uint8_t _GetTickButtonStg(void)
+{
+    return tickbuttonstg;
+}
+
+uint8_t _GetCurrentPrg(void)
+{
+    return CurrentPrg;
+}
+
+uint8_t _GetCurrentMode(void)
+{
+    return CurrentMode;
+}
 
 void _SetCalendarEvent(stCalendarEvent *pst)
 {
@@ -153,14 +170,6 @@ void _SetRGBMode(uint8_t m)
     }
 }
 
-/*
-void _SetRGBEffect(stCurrentMode *st, uint8_t mode)
-{
-    if(st)
-        memcpy(&_RGBCurrentMode, st, sizeof(_RGBCurrentMode));
-    ledEffect = mode;
-}
-    */
 
 void _SetRGBEffect(stCurrentMode *st, uint8_t mode)
 {
@@ -756,9 +765,222 @@ void _ProcModeAuto(rtc_soft_t *rtc)
 }
 */
 
+void ForceManual1(void)
+{
+    stCurrentMode Cmode;
+    Cmode.mode = _RGB_MODE_MANUAL;
+    Cmode.reflector1_enable = true;
+    Cmode.reflector1_on = true;
+    Cmode.reflector2_enable = true;
+    Cmode.reflector2_on = true;
+    Cmode.rgbg1_enable = true;
+    Cmode.rgbg1_r = 255;
+    Cmode.rgbg1_g = 255;
+    Cmode.rgbg1_b = 255;
+    Cmode.rgbg1_w = 0;
+    Cmode.rgbg2_enable = true;
+    Cmode.rgbg2_r = 255;
+    Cmode.rgbg2_g = 255;
+    Cmode.rgbg2_b = 255;
+    Cmode.rgbg2_w = 0;
+    Cmode.rgbg3_enable = true;
+    Cmode.rgbg3_r = 255;
+    Cmode.rgbg3_g = 255;
+    Cmode.rgbg3_b = 255;
+    Cmode.rgbg3_w = 0;
+    Cmode.rgbg4_enable = true;
+    Cmode.rgbg4_r = 255;
+    Cmode.rgbg4_g = 255;
+    Cmode.rgbg4_b = 255;
+    Cmode.rgbg4_w = 0;
+
+    _SetRGBCurrentMode(&Cmode);
+}
+
+void ForceManual2(void)
+{
+    stCurrentMode Cmode;
+    Cmode.mode = _RGB_MODE_MANUAL;
+    Cmode.reflector1_enable = true;
+    Cmode.reflector1_on = true;
+    Cmode.reflector2_enable = true;
+    Cmode.reflector2_on = true;
+    Cmode.rgbg1_enable = true;
+    Cmode.rgbg1_r = 255;
+    Cmode.rgbg1_g = 0;
+    Cmode.rgbg1_b = 0;
+    Cmode.rgbg1_w = 0;
+    Cmode.rgbg2_enable = true;
+    Cmode.rgbg2_r = 255;
+    Cmode.rgbg2_g = 0;
+    Cmode.rgbg2_b = 0;
+    Cmode.rgbg2_w = 0;
+    Cmode.rgbg3_enable = true;
+    Cmode.rgbg3_r = 255;
+    Cmode.rgbg3_g = 0;
+    Cmode.rgbg3_b = 0;
+    Cmode.rgbg3_w = 0;
+    Cmode.rgbg4_enable = true;
+    Cmode.rgbg4_r = 255;
+    Cmode.rgbg4_g = 0;
+    Cmode.rgbg4_b = 0;
+    Cmode.rgbg4_w = 0;
+
+    _SetRGBCurrentMode(&Cmode);
+}
+
+void ForceManual3(void)
+{
+    stCurrentMode Cmode;
+    Cmode.mode = _RGB_MODE_MANUAL;
+    Cmode.reflector1_enable = true;
+    Cmode.reflector1_on = true;
+    Cmode.reflector2_enable = true;
+    Cmode.reflector2_on = true;
+    Cmode.rgbg1_enable = true;
+    Cmode.rgbg1_r = 0;
+    Cmode.rgbg1_g = 255;
+    Cmode.rgbg1_b = 0;
+    Cmode.rgbg1_w = 0;
+    Cmode.rgbg2_enable = true;
+    Cmode.rgbg2_r = 0;
+    Cmode.rgbg2_g = 255;
+    Cmode.rgbg2_b = 0;
+    Cmode.rgbg2_w = 0;
+    Cmode.rgbg3_enable = true;
+    Cmode.rgbg3_r = 0;
+    Cmode.rgbg3_g = 255;
+    Cmode.rgbg3_b = 0;
+    Cmode.rgbg3_w = 0;
+    Cmode.rgbg4_enable = true;
+    Cmode.rgbg4_r = 0;
+    Cmode.rgbg4_g = 255;
+    Cmode.rgbg4_b = 0;
+    Cmode.rgbg4_w = 0;
+
+    _SetRGBCurrentMode(&Cmode);
+}
+
+void ForceManual4(void)
+{
+    stCurrentMode Cmode;
+    Cmode.mode = _RGB_MODE_MANUAL;
+    Cmode.reflector1_enable = true;
+    Cmode.reflector1_on = true;
+    Cmode.reflector2_enable = true;
+    Cmode.reflector2_on = true;
+    Cmode.rgbg1_enable = true;
+    Cmode.rgbg1_r = 0;
+    Cmode.rgbg1_g = 0;
+    Cmode.rgbg1_b = 255;
+    Cmode.rgbg1_w = 0;
+    Cmode.rgbg2_enable = true;
+    Cmode.rgbg2_r = 0;
+    Cmode.rgbg2_g = 0;
+    Cmode.rgbg2_b = 255;
+    Cmode.rgbg2_w = 0;
+    Cmode.rgbg3_enable = true;
+    Cmode.rgbg3_r = 0;
+    Cmode.rgbg3_g = 0;
+    Cmode.rgbg3_b = 255;
+    Cmode.rgbg3_w = 0;
+    Cmode.rgbg4_enable = true;
+    Cmode.rgbg4_r = 0;
+    Cmode.rgbg4_g = 0;
+    Cmode.rgbg4_b = 255;
+    Cmode.rgbg4_w = 0;
+
+    _SetRGBCurrentMode(&Cmode);
+}
+
+void ForceManual5(void)
+{
+    stCurrentMode Cmode;
+    Cmode.mode = _RGB_MODE_MANUAL;
+    Cmode.reflector1_enable = true;
+    Cmode.reflector1_on = false;
+    Cmode.reflector2_enable = true;
+    Cmode.reflector2_on = false;
+    Cmode.rgbg1_enable = true;
+    Cmode.rgbg1_r = 0;
+    Cmode.rgbg1_g = 0;
+    Cmode.rgbg1_b = 0;
+    Cmode.rgbg1_w = 0;
+    Cmode.rgbg2_enable = true;
+    Cmode.rgbg2_r = 0;
+    Cmode.rgbg2_g = 0;
+    Cmode.rgbg2_b = 0;
+    Cmode.rgbg2_w = 0;
+    Cmode.rgbg3_enable = true;
+    Cmode.rgbg3_r = 0;
+    Cmode.rgbg3_g = 0;
+    Cmode.rgbg3_b = 0;
+    Cmode.rgbg3_w = 0;
+    Cmode.rgbg4_enable = true;
+    Cmode.rgbg4_r = 0;
+    Cmode.rgbg4_g = 0;
+    Cmode.rgbg4_b = 0;
+    Cmode.rgbg4_w = 0;
+
+    _SetRGBCurrentMode(&Cmode);
+}
+
 void _ProcModeAuto(rtc_soft_t *rtc)
 {
     static int8_t lastevent = -1;
+    static uint8_t tickbuttoncnt = 0;
+ //   static uint8_t tickbuttonstg = 0;
+    static uint8_t edgeflag = 0;
+
+    if(_ReadConfigInput())
+    {
+        if(tickbuttoncnt++ >= 5 && tickbuttonstg == 0)
+        {
+            tickbuttonstg = 1;
+            edgeflag = 1;
+        }
+        else if(tickbuttoncnt++ >= 1 && tickbuttonstg && !edgeflag)
+        {
+            tickbuttonstg++;
+            if(tickbuttonstg > 5) tickbuttonstg = 1;   
+            edgeflag = 1;
+        }
+    }
+    else
+    {
+        tickbuttoncnt = 0;
+        edgeflag = 0;
+        //tickbuttonstg = 0;
+    }
+
+    switch (tickbuttonstg)
+    {
+        case 0:
+        break;
+        
+        // Estado manual forzado
+        case 1:
+        if(edgeflag) ForceManual1();
+        break;
+
+        case 2:
+        if(edgeflag) ForceManual2();
+        break;
+
+        case 3:
+        if(edgeflag) ForceManual3();
+        break;
+
+        case 4:
+        if(edgeflag) ForceManual4();
+        break;
+
+        case 5:
+        if(edgeflag) ForceManual5();
+        break;
+
+    }
+    
 
     stEffects *p_stnv = _GetNVEffects();
 
@@ -770,8 +992,16 @@ void _ProcModeAuto(rtc_soft_t *rtc)
 
     // Solo procesamos calendario en modo automático
     if (p_stnv->mode != _RGB_MODE_AUTO)
+    {
+        CurrentPrg = 0;
+        CurrentMode = p_stnv->mode;
         return;
-
+    }
+    else 
+    {    
+        tickbuttonstg = 0;
+        CurrentMode = _RGB_MODE_AUTO;
+    }
 
     uint8_t weekday = RTC_GetWeekDay(rtc);
 
@@ -805,6 +1035,8 @@ void _ProcModeAuto(rtc_soft_t *rtc)
     printf("Day Bit  : 0x%02X\r\n", day_bit);
 #endif
 
+    CurrentPrg = 0;
+    
     for (int idx = 0; idx < _MAXEFFECTEVENTS; idx++)
     {
         stCalendarEvent *ev = &p_stnv->CalendarEvent[idx];
@@ -916,6 +1148,8 @@ void _ProcModeAuto(rtc_soft_t *rtc)
         // -------------------------------------------------
         if (active_t1 || active_t2)
         {
+            CurrentPrg = idx + 1;
+   
             event_active = 1;
 
             stCurrentMode st = {0};

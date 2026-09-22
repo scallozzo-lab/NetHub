@@ -544,7 +544,9 @@ void _ProcLTProto(void)
                 else
                 {
                     TxLTHubStatus.extra.netvalues.netvoltage = _GetNetVoltage();
-                    TxLTHubStatus.extra.netvalues.netcurrent = _GetNetCurrent();    
+                    TxLTHubStatus.extra.netvalues.netcurrent = _GetNetCurrent();
+                    TxLTHubStatus.extra.netvalues.prognr = _GetCurrentPrg();
+                    TxLTHubStatus.extra.netvalues.mode = _GetCurrentMode();
                 }
                 memcpy(&TxLTHubStatus.rtc, _GetRtcPtr(), sizeof(TxLTHubStatus.rtc));
                 

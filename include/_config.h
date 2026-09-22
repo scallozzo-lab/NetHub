@@ -3,6 +3,7 @@
 
 #include "main.h"
 
+void _InitConfigPin(void);
 uint8_t _ReadConfigInput(void);
 
 

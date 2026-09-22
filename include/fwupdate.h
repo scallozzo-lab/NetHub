@@ -20,8 +20,6 @@ typedef enum
 {
     _FW_STG_INIT    = 0,
     _FW_STG_GET_FRAME,
-
-
 }efwupdatestg;
 
 typedef enum
