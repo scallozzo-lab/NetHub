@@ -14,7 +14,10 @@
  # [LCD] Implementar gráficos y segundo display.
  # [STM32] Verificar la lectura de ADC de temperatura, parece estar fuera de rango.
  ------------------------------------------------------------------------------------------
- 
+
+ [26/09/2026] SCALLOZZO
+    # Agrega control de tiempo máximo de proceso del modem. _MAXTIMEUP_GRALPROCESS.
+
  [08/09/2026] SCALLOZZO
  
     # Se agrega _CANTMAX_RETRY_NOREG para borrar y rearrancar registro en la red. Esto sirve en los casos donde le modem se queda

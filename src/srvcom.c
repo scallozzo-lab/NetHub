@@ -460,11 +460,19 @@ void _ProcSrvCom(void)
     static uint8_t xregretry = 0;
     static uint16_t xdnsretry = 0;
     static uint16_t GralCommTimer = 0;
-
+    static uint32_t GralProcTimer = 0;
 
 #ifdef _USE_DEBUG_TXRX
     debug_timer++;
 #endif
+
+    if(GralProcTimer++ >= _MAXTIMEUP_GRALPROCESS)
+    {
+        printf("[_ProcSrvCom] Sin Actividad! Inicializar...\n");
+        _ComFlushRx();
+        _InitSrvCom(0);
+        GralProcTimer = 0;
+    }
 
     if(SrvCom.status & SRVCOM_STS_ENABLERX)
     {    
@@ -852,6 +860,7 @@ void _ProcSrvCom(void)
                 printf("[_ProcSrvCom] RX OK...\n");
 #endif                
                 GralCommTimer = 0;
+                GralProcTimer = 0;
                 timerrx = 0;
                 gralrx = 0;
                 SrvCom.status &= ~SRVCOM_STS_RXRDY;

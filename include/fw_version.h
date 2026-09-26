@@ -4,8 +4,8 @@
 #include "main.h"
 
 
-#define FW_VERSION_0            1
-#define FW_VERSION_1            9
+#define FW_VERSION_0            2
+#define FW_VERSION_1            0
 #define FW_VERSION_REV          'd'
 #ifndef FW_TYPE
 	#define FW_TYPE            '?'
